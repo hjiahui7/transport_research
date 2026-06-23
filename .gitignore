@@ -15,6 +15,11 @@ runs/
 !artifacts/
 !artifacts/**
 artifacts/models/
+
+# Small inference models are intentionally committed.
+!models/
+!models/*.pt
+!models/*.joblib
 *.zip
 bundle_staging/
 bundle_verify/

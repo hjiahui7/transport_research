@@ -121,9 +121,10 @@ Rawalk / EgoHumans 原始数据默认放在：
 data/media/rawalk/disk1/rawalk/datasets/ego_exo/camera_ready/01_tagging
 ```
 
-GitHub 里只放轻量结果文件：
+GitHub 里放轻量模型和结果文件：
 
 ```text
+models/
 artifacts/data/
 ```
 
@@ -134,6 +135,15 @@ data/media                  # 原始 Rawalk，大约 74GB
 data/rawalk_yolo_person     # YOLO 训练图片和标签，大约 3.36GB
 runs/                       # 训练过程和模型输出
 ```
+
+`models/` 里包含直接推理需要的小模型：
+
+| 文件 | 用途 |
+|---|---|
+| `models/yolo11n.pt` | 方案一 distance head 的 YOLO base model |
+| `models/yolo_distance_head_all_step10_m20.pt` | 方案一训练好的 distance head |
+| `models/rawalk_yolo11s_960_e20_best.pt` | 方案二 fine-tuned Rawalk YOLO detector |
+| `models/rawalk_ego_scheme2_calibrator.joblib` | 方案二 MLP calibrator |
 
 `artifacts/data/` 里主要是：
 
