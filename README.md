@@ -139,6 +139,22 @@ artifacts/data/
 
 `artifacts/data/` 包含 train/eval CSV、预测 CSV、metrics 和 summary。它不包含 Rawalk 原始图片、原始 3D pose 和模型权重，因为完整 `data/` 当前约 84GB，模型权重也作为二进制产物单独管理。
 
+本地如果需要模型 + 处理后数据包，可以使用：
+
+```text
+human_detect_models_data_bundle.zip
+```
+
+这个 zip 解压到项目根目录后会得到：
+
+```text
+models/
+artifacts/data/
+README_BUNDLE.md
+```
+
+它包含方案一 distance head、方案一需要的 `yolo11n.pt`、方案二 fine-tuned YOLO detector、方案二 calibrator，以及 CSV/JSON/YAML 结果；不包含 `data/media` 原始 Rawalk 大目录。
+
 ## 从原始 Rawalk 处理到训练数据
 
 如果别人下载了 Rawalk/EgoHumans 原始数据，可以按下面流程重新生成本项目使用的训练数据。
@@ -442,6 +458,19 @@ Median absolute error: 0.192m
 
 注意：这个评估是“用 GT bbox 中心格子读 distance head”，还没有经过完整检测链路。
 
+方案一单图推理：
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.infer_distance_head `
+  --image path\to\image.jpg `
+  --checkpoint models\yolo_distance_head_all_step10_m20.pt `
+  --base-model models\yolo11n.pt `
+  --out runs\scheme1_distance_head.json `
+  --vis runs\scheme1_distance_head.png `
+  --device cuda:0 `
+  --imgsz 640
+```
+
 ## 方案二：Fine-tuned YOLO + MoGe + Calibration
 
 这条路线不让 YOLO 直接预测距离。YOLO 只负责检测人体，MoGe 负责估计深度，calibrator 负责修正系统误差。
@@ -676,6 +705,20 @@ calibrated distance MAE: 0.220m
 calibrated <= 0.5m on matched persons: 90.8%
 calibrated <= 1.0m on matched persons: 98.3%
 calibrated bias: -0.022m
+```
+
+方案二单图推理：
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.infer `
+  --image path\to\image.jpg `
+  --detector models\rawalk_yolo11s_960_e20_best.pt `
+  --calibrator models\rawalk_ego_scheme2_calibrator.joblib `
+  --out runs\scheme2_moge_calibrated.json `
+  --vis runs\scheme2_moge_calibrated.png `
+  --imgsz 960 `
+  --geom-size 640 `
+  --device cuda:0
 ```
 
 ## 代码入口

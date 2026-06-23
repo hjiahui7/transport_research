@@ -22,6 +22,8 @@ def save_visualization(image_path: str | Path, persons: list[dict[str, Any]], ma
         yaw = person.get("bearing_yaw_deg")
         if distance is None:
             text = f"#{person['id']} depth n/a"
+        elif yaw is None:
+            text = f"#{person['id']} {distance:.2f}m"
         else:
             text = f"#{person['id']} {distance:.2f}m yaw {yaw:.1f}"
         y_text = max(18, y1 - 8)
@@ -43,4 +45,3 @@ def _colors(count: int) -> list[tuple[int, int, int]]:
         (26, 188, 156),
     ]
     return [palette[i % len(palette)] for i in range(count)]
-

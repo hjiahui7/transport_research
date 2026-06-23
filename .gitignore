@@ -15,3 +15,6 @@ runs/
 !artifacts/
 !artifacts/**
 artifacts/models/
+*.zip
+bundle_staging/
+bundle_verify/
