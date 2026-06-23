@@ -160,7 +160,10 @@ runs/                       # 训练过程和模型输出
 
 ## 从原始 Rawalk 处理到训练数据
 
-别人下载 Rawalk/EgoHumans 原始数据后，可以按下面步骤复现训练数据。
+别人下载 Rawalk/EgoHumans 原始数据后，可以按下面两条路线复现。两条路线共用同一份 Rawalk 原始数据，但训练目标不同：
+
+- 方案一：只训练一个 YOLO distance head，输入单图后直接给人框和距离。
+- 方案二：先训练 Rawalk YOLO 检测器，再用 MoGe 算深度，最后用 calibrator 修正距离。
 
 ### 需要的原始子目录
 
@@ -181,12 +184,102 @@ runs/                       # 训练过程和模型输出
 |---|---|
 | `exo/*/images` | YOLO 检测器训练图片 |
 | `processed_data/bboxes/*/rgb` | YOLO 检测器 bbox 标签 |
-| `ego/*/images/rgb` | 方案二检测 + MoGe 深度输入图片 |
+| `ego/*/images/rgb` | ego 图片；方案二还会拿它做检测 + MoGe 深度输入 |
 | `ego/*/calib` | ego 相机内参/外参，用于 GT 投影和距离计算 |
 | `processed_data/fit_poses3d` | 3D 人体关键点，用于生成距离 GT |
 | `colmap_from_aria_transforms.pkl` | 多个 Aria 相机到统一世界坐标的变换 |
 
-### 1. 生成 YOLO 训练数据
+### 方案一：Distance Head 路线
+
+这条路线不跑 MoGe，也不训练 Rawalk YOLO 检测器。它用 Rawalk ego 的 3D pose/calib 先生成距离 GT，然后在 `yolo11n.pt` 上接一个很小的 distance head。
+
+#### 1. 生成 Rawalk ego 距离 GT
+
+这一步不训练模型，只用 Rawalk 的 3D pose + Aria calibration 生成 `bbox + depth_m + distance_m` CSV。
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.rawalk_ego_depth `
+  --rawalk-root data\media\rawalk `
+  --viewers aria01 aria02 aria03 aria04 `
+  --frame-step 10 `
+  --out runs\rawalk_ego_depth_all_step10.csv
+```
+
+当前生成：
+
+```text
+images: 1880
+person distance rows: 3924
+```
+
+#### 2. 过滤异常距离并固定 train/eval
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.split_rawalk_ego_depth `
+  --labels runs\rawalk_ego_depth_all_step10.csv `
+  --train-out runs\rawalk_ego_depth_all_step10_m20.train.csv `
+  --eval-out runs\rawalk_ego_depth_all_step10_m20.eval.csv `
+  --summary-out runs\rawalk_ego_depth_all_step10_m20.split.json `
+  --eval-fraction 0.2 `
+  --seed 7 `
+  --min-distance 0.2 `
+  --max-distance 20
+```
+
+当前 split：
+
+```text
+original rows: 3924
+filtered outliers: 206
+train images: 1449
+train person rows: 2990
+eval images: 362
+eval person rows: 728
+```
+
+切分按 `image_path` 分组，避免同一张图里的人同时出现在 train 和 eval。
+
+#### 3. 训练方案一 Distance Head
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.train_yolo_distance_head `
+  --labels runs\rawalk_ego_depth_all_step10_m20.train.csv `
+  --val-labels runs\rawalk_ego_depth_all_step10_m20.eval.csv `
+  --model yolo11n.pt `
+  --out runs\yolo_distance_head_all_step10_m20.pt `
+  --metrics-out runs\yolo_distance_head_all_step10_m20.metrics.json `
+  --epochs 30 `
+  --batch 16 `
+  --imgsz 640 `
+  --device cuda:0
+```
+
+当前训练出的模型已复制到：
+
+```text
+models/yolo_distance_head_all_step10_m20.pt
+```
+
+#### 4. 方案一单图推理
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.infer_distance_head `
+  --image path\to\image.jpg `
+  --checkpoint models\yolo_distance_head_all_step10_m20.pt `
+  --base-model models\yolo11n.pt `
+  --out runs\scheme1_distance_head.json `
+  --vis runs\scheme1_distance_head.png `
+  --device cuda:0 `
+  --imgsz 640
+```
+
+方案一输出的是模型自己预测的 `distance_m`，不依赖 MoGe depth，也不做 calibration。
+
+### 方案二：YOLO + MoGe + Calibration 路线
+
+这条路线是完整链路：先提高人体检测，再用 MoGe 从单图估计深度，最后用 Rawalk GT 训练一个小 calibrator 修正 MoGe 的系统偏差。
+
+#### 1. 生成 YOLO 训练数据
 
 把 Rawalk exo 图片和 bbox 标注转成 YOLO 格式：
 
@@ -219,7 +312,7 @@ val images: 296
 val boxes: 975
 ```
 
-### 2. 训练 Rawalk YOLO 检测器
+#### 2. 训练 Rawalk YOLO 检测器
 
 ```powershell
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.train_yolo `
@@ -246,9 +339,22 @@ mAP50: 0.933
 mAP50-95: 0.854
 ```
 
-### 3. 生成 Rawalk ego 距离 GT
+当前训练出的检测器已复制到：
 
-这一步不训练模型，只用 Rawalk 的 3D pose + Aria calibration 生成 `bbox + depth_m + distance_m` CSV。
+```text
+models/rawalk_yolo11s_960_e20_best.pt
+```
+
+#### 3. 生成/复用 ego 距离 GT
+
+方案二使用和方案一相同的 ego GT。如果已经跑过方案一的第 1、2 步，直接复用下面两个文件：
+
+```text
+runs/rawalk_ego_depth_all_step10_m20.train.csv
+runs/rawalk_ego_depth_all_step10_m20.eval.csv
+```
+
+如果只跑方案二，也可以在本块里重新生成：
 
 ```powershell
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.rawalk_ego_depth `
@@ -257,15 +363,6 @@ D:\coding\anaconda\envs\qwen\python.exe -m human_detect.rawalk_ego_depth `
   --frame-step 10 `
   --out runs\rawalk_ego_depth_all_step10.csv
 ```
-
-当前生成：
-
-```text
-images: 1880
-person distance rows: 3924
-```
-
-### 4. 过滤异常距离并固定 train/eval
 
 ```powershell
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.split_rawalk_ego_depth `
@@ -279,35 +376,7 @@ D:\coding\anaconda\envs\qwen\python.exe -m human_detect.split_rawalk_ego_depth `
   --max-distance 20
 ```
 
-当前 split：
-
-```text
-original rows: 3924
-filtered outliers: 206
-train images: 1449
-train person rows: 2990
-eval images: 362
-eval person rows: 728
-```
-
-切分按 `image_path` 分组，避免同一张图里的人同时出现在 train 和 eval。
-
-### 5. 训练方案一 Distance Head
-
-```powershell
-D:\coding\anaconda\envs\qwen\python.exe -m human_detect.train_yolo_distance_head `
-  --labels runs\rawalk_ego_depth_all_step10_m20.train.csv `
-  --val-labels runs\rawalk_ego_depth_all_step10_m20.eval.csv `
-  --model yolo11n.pt `
-  --out runs\yolo_distance_head_all_step10_m20.pt `
-  --metrics-out runs\yolo_distance_head_all_step10_m20.metrics.json `
-  --epochs 30 `
-  --batch 16 `
-  --imgsz 640 `
-  --device cuda:0
-```
-
-### 6. 生成方案二 Calibration 训练数据
+#### 4. 生成方案二 Calibration 训练数据
 
 train split：
 
@@ -315,7 +384,7 @@ train split：
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.eval_rawalk_ego_depth `
   --labels runs\rawalk_ego_depth_all_step10_m20.train.csv `
   --out runs\rawalk_ego_scheme2_train_preds.csv `
-  --detector runs\yolo\rawalk_yolo11s_960_e20\weights\best.pt `
+  --detector models\rawalk_yolo11s_960_e20_best.pt `
   --imgsz 960 `
   --geom-size 640 `
   --device cuda:0 `
@@ -329,7 +398,7 @@ eval split：
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.eval_rawalk_ego_depth `
   --labels runs\rawalk_ego_depth_all_step10_m20.eval.csv `
   --out runs\rawalk_ego_scheme2_eval_preds.csv `
-  --detector runs\yolo\rawalk_yolo11s_960_e20\weights\best.pt `
+  --detector models\rawalk_yolo11s_960_e20_best.pt `
   --imgsz 960 `
   --geom-size 640 `
   --device cuda:0 `
@@ -337,7 +406,9 @@ D:\coding\anaconda\envs\qwen\python.exe -m human_detect.eval_rawalk_ego_depth `
   --iou-threshold 0.3
 ```
 
-### 7. 训练方案二 Calibrator
+这一步会对每张 ego 图跑 `YOLO -> MoGe -> 几何反投影`，再和 Rawalk GT 按 IoU 匹配，输出每个人的 raw 距离、深度统计特征和 GT 距离。
+
+#### 5. 训练方案二 Calibrator
 
 ```powershell
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.fit_calibrator `
@@ -347,6 +418,28 @@ D:\coding\anaconda\envs\qwen\python.exe -m human_detect.fit_calibrator `
   --model best `
   --group-column image_id
 ```
+
+当前训练出的 calibrator 已复制到：
+
+```text
+models/rawalk_ego_scheme2_calibrator.joblib
+```
+
+#### 6. 方案二单图推理
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.infer `
+  --image path\to\image.jpg `
+  --detector models\rawalk_yolo11s_960_e20_best.pt `
+  --calibrator models\rawalk_ego_scheme2_calibrator.joblib `
+  --out runs\scheme2_moge_calibrated.json `
+  --vis runs\scheme2_moge_calibrated.png `
+  --imgsz 960 `
+  --geom-size 640 `
+  --device cuda:0
+```
+
+方案二输出里会同时保留 MoGe raw 距离和 calibration 后的距离。最终看 `distance_calibrated_m`。
 
 ## 原理说明
 
