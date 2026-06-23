@@ -11,3 +11,7 @@ runs/
 *.onnx
 *.engine
 
+# Small, curated CSV/JSON/YAML result package for GitHub.
+!artifacts/
+!artifacts/**
+artifacts/models/

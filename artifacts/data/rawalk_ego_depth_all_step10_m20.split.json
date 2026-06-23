@@ -1,0 +1,17 @@
+{
+  "group_column": "image_path",
+  "seed": 7,
+  "eval_fraction": 0.2,
+  "train_groups": 1449,
+  "eval_groups": 362,
+  "train_rows": 2990,
+  "eval_rows": 728,
+  "labels": "runs\\rawalk_ego_depth_all_step10.csv",
+  "train_out": "runs\\rawalk_ego_depth_all_step10_m20.train.csv",
+  "eval_out": "runs\\rawalk_ego_depth_all_step10_m20.eval.csv",
+  "original_rows": 3924,
+  "filtered_rows": 206,
+  "distance_column": "distance_m",
+  "min_distance": 0.2,
+  "max_distance": 20.0
+}

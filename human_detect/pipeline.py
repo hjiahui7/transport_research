@@ -20,13 +20,14 @@ class DistanceEstimator:
         detector: str = "yolo11n-seg.pt",
         geometry_model: str = "Ruicheng/moge-2-vits-normal",
         imgsz: int = 640,
+        conf: float = 0.25,
         geom_size: int = 768,
         num_tokens: int | None = 1200,
         device: str = "cuda:0",
         half: bool = True,
         calibrator: CalibratorBundle | None = None,
     ) -> None:
-        self.segmenter = YoloPersonSegmenter(detector, device=device, imgsz=imgsz, half=half)
+        self.segmenter = YoloPersonSegmenter(detector, device=device, imgsz=imgsz, half=half, conf=conf)
         self.geometry = MogeGeometry(geometry_model, device=device, half=half, geom_size=geom_size, num_tokens=num_tokens)
         self.calibrator = calibrator
 
@@ -66,6 +67,7 @@ class DistanceEstimator:
                 "score": person.score,
                 "bbox_xyxy": [float(v) for v in person.bbox_xyxy],
                 "mask_area_px": pooled.mask_area_px,
+                "mask_source": person.mask_source,
                 "z_depth_m": None,
                 "distance_m": None,
                 "bearing_yaw_deg": None,

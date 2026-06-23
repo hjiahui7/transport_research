@@ -1,0 +1,11 @@
+{
+  "model": "runs\\yolo\\rawalk_yolo11s_960_e20\\weights\\best.pt",
+  "data": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\data\\rawalk_yolo_person\\rawalk_person.yaml",
+  "imgsz": 960,
+  "batch": 8,
+  "precision": 0.9562122224669546,
+  "recall": 0.873497180646162,
+  "map50": 0.9332262031279625,
+  "map50_95": 0.8544209884107057,
+  "save_dir": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\runs\\yolo\\rawalk_yolo11s_960_e20_eval"
+}
