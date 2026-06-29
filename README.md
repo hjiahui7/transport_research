@@ -750,8 +750,3 @@ runs/workzone/qwen3_vl_32b_eval20_batch20_ft_head/
 | orientation | `16 / 23 = 69.6%` |
 | occlusion_level | `19 / 23 = 82.6%` |
 
-### 5. 新图注意事项
-
-新图没有 GT 时，只运行第 2 步即可。输出 JSON 里会有 `distance_to_equipment_m` 和视觉属性，但不会有 accuracy。
-
-如果不是 work-zone 这类相机视角，距离可能会漂。当前更可靠的是安全等级 `Close / Careful / Safe`，数值米数在远处小人上仍可能有 outlier。
