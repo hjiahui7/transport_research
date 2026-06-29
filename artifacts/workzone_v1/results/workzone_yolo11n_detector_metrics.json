@@ -1,0 +1,11 @@
+{
+  "model": "runs\\yolo\\workzone_yolo11n_960_e30\\weights\\best.pt",
+  "data": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\data\\workzone_yolo_person\\workzone_person.yaml",
+  "imgsz": 960,
+  "batch": 16,
+  "precision": 0.9931261688184492,
+  "recall": 0.9751552795031055,
+  "map50": 0.9940946647260325,
+  "map50_95": 0.9120448571207666,
+  "save_dir": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\runs\\yolo\\workzone_yolo11n_960_e30_val"
+}

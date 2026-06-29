@@ -1,0 +1,21 @@
+{
+  "matched": 135,
+  "total_gt": 135,
+  "match_rate": 1.0,
+  "mae_m": 0.554190311111111,
+  "rmse_m": 1.6294340676680992,
+  "bias_m": 0.11596087407407411,
+  "absrel": 0.09337025881836498,
+  "within_0_5m": 0.8222222222222222,
+  "within_1_0m": 0.8888888888888888,
+  "within_0_5m_all_gt": 0.8222222222222222,
+  "within_1_0m_all_gt": 0.8888888888888888,
+  "band_accuracy": 0.9481481481481482,
+  "scheme": "yolo_distance_head",
+  "labels": "runs\\workzone\\workzone_depth.eval.csv",
+  "checkpoint": "runs\\workzone\\workzone_yolo_distance_head.pt",
+  "base_model": "models\\yolo11n.pt",
+  "detector": "models\\yolo11n.pt",
+  "iou_threshold": 0.3,
+  "images": 96
+}

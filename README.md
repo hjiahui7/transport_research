@@ -1,16 +1,18 @@
 # human_detect
 
-这是一个人体检测 + 单图多人距离估计项目。当前只围绕 Rawalk/EgoHumans 数据整理两条路线：
+这是一个人体检测 + 单图多人距离估计项目。当前主要有两条路线：
 
 - **方案一：YOLO distance head**  
   YOLO 找人框，然后一个小的 distance head 直接预测人到相机的距离。
 
 - **方案二：fine-tuned YOLO + MoGe + calibration**  
-  fine-tuned YOLO 负责找人，MoGe 负责估深度，calibrator 负责把 MoGe 的系统误差修正到 Rawalk GT。
+  fine-tuned YOLO 负责找人，MoGe 负责估深度，calibrator 负责把 MoGe 的系统误差修正到训练数据 GT。
 
 ## 当前结果
 
-两个方案使用同一个 eval set：
+### 1. Rawalk/EgoHumans 旧数据
+
+旧实验使用同一个 Rawalk/EgoHumans eval set：
 
 ```text
 runs/rawalk_ego_depth_all_step10_m20.eval.csv
@@ -28,6 +30,54 @@ runs/rawalk_ego_depth_all_step10_m20.eval.csv
 - 方案一目前是在 GT 框中心格子上评估 distance head，主要衡量距离头本身，还没把检测漏检算进去。
 - 方案二是完整链路评估：检测 -> MoGe -> calibration -> 和 GT 匹配。它匹配上的人距离更准，但检测/匹配覆盖率是 `519 / 728 = 71.3%`。
 - 如果把漏检也算失败，方案二 calibrated 在全部 728 个 GT 上，0.5m 内比例是 `64.7%`，1.0m 内比例是 `70.1%`。
+
+### 2. work-zone-safety-rgbd-dataset 新数据
+
+新数据使用 `work-zone-safety-rgbd-dataset`：
+
+```text
+总计：500 张图，806 个 worker
+train：400 张图，645 个 worker box，523 个有数值深度 GT 的 worker
+eval：100 张图，161 个 worker box，135 个有数值深度 GT 的 worker
+```
+
+work-zone 上的 fine-tuned YOLO 检测器是 `runs/yolo/workzone_yolo11n_960_e30/weights/best.pt`，检测指标：
+
+```text
+precision 0.993, recall 0.975, mAP50 0.994, mAP50-95 0.912
+```
+
+距离全量 eval 结果：
+
+| 方案 | 检测/距离来源 | Eval 口径 | 距离 MAE | RMSE | 0.5m 内 | 1.0m 内 | distance_band |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 原方案一：base YOLO + distance head | 官方 `yolo11n.pt` 特征 + distance head | 135 / 135 | 0.554m | 1.629m | 82.2% | 88.9% | 94.8% |
+| 新方案一：fine-tuned YOLO + distance head | work-zone YOLO 特征 + 新 distance head | 135 / 135 | 0.428m | 1.088m | 84.4% | 93.3% | 91.1% |
+| 新方案二：fine-tuned YOLO + MoGe + calibration | work-zone YOLO + MoGe + calibrator | 134 / 135 | **0.379m** | **0.983m** | **89.6%** | **95.5%** | **94.8%** |
+
+新方案一 + Qwen VLM 的 20 图 JSON pipeline smoke test：
+
+```text
+runs/workzone/qwen3_vl_32b_eval20_batch20_ft_head/summary.json
+```
+
+| 字段 | 结果 |
+|---|---:|
+| worker 匹配 | `24 / 24 = 100.0%` |
+| distance MAE | `1.060m` |
+| distance_band | `18 / 21 = 85.7%` |
+| high_visibility_vest | `22 / 22 = 100.0%` |
+| helmet_status | `20 / 23 = 87.0%` |
+| orientation | `16 / 23 = 69.6%` |
+| occlusion_level | `19 / 23 = 82.6%` |
+
+同一批 20 图里，旧方案一的 distance MAE 是 `1.481m`；换成新方案一后降到 `1.060m`，下降约 `28.4%`。20 图只是 smoke test，波动会比 100 图 eval 大，正式距离指标以上面的全量 eval 为准。
+
+本轮 work-zone 新模型和结果已整理到：
+
+```text
+artifacts/workzone_v1/
+```
 
 ## 环境
 
@@ -549,3 +599,147 @@ human_detect.train_yolo_distance_head  训练方案一 distance head
 human_detect.eval_rawalk_ego_depth     跑方案二检测+深度并输出匹配预测
 human_detect.fit_calibrator            训练 calibration regressor
 ```
+
+## 单图 JSON Pipeline
+
+这个 pipeline 的目标是：输入一张 RGB 图，输出一个和安全分析任务对齐的 JSON。当前推荐先用轻量路线：
+
+```text
+YOLO 检测 worker
+-> distance head 输出 distance_to_equipment_m
+-> 代码按距离自动生成 distance_band
+-> 给检测框画 W1/W2 编号
+-> Qwen VLM 判断 PPE / helmet / orientation / occlusion
+-> 合并成最终 JSON
+```
+
+距离来自本地模型，不让 VLM 猜距离。VLM 只负责视觉属性：
+
+```text
+high_visibility_vest
+helmet_status
+orientation
+occlusion_level
+```
+
+### 1. 设置 Qwen API
+
+不要把 API key 写进代码或 README。运行前在 PowerShell 里设置环境变量：
+
+```powershell
+$env:QWEN_API_KEY="你的 API key"
+$env:QWEN_BASE_URL="https://ws-2vah2d019k5467zo.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+$env:QWEN_MODEL="qwen3-vl-32b-thinking"
+```
+
+### 2. 单图生成 JSON
+
+推荐使用 work-zone 上重新训练过的 YOLO 和 distance head：
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.workzone_report `
+  --image work-zone-safety-rgbd-dataset\images\Garage1_000840.png `
+  --checkpoint runs\workzone\workzone_yolo_ft_distance_head.pt `
+  --base-model runs\yolo\workzone_yolo11n_960_e30\weights\best.pt `
+  --detector runs\yolo\workzone_yolo11n_960_e30\weights\best.pt `
+  --out runs\workzone\single_report.json `
+  --annotated-image runs\workzone\single_report_annotated.jpg `
+  --device cuda:0
+```
+
+输出示例：
+
+```json
+{
+  "image_id": "Garage1_000840.png",
+  "equipment_type": "dump truck",
+  "worker_count": 1,
+  "workers": [
+    {
+      "worker_index": 1,
+      "distance_to_equipment_m": 10.325,
+      "distance_band": "Safe",
+      "high_visibility_vest": true,
+      "helmet_status": "absent",
+      "orientation": "Facing",
+      "occlusion_level": "none"
+    }
+  ]
+}
+```
+
+`distance_band` 由代码按米数生成：
+
+| 距离 | 输出 |
+|---|---|
+| `< 3m` | `Close` |
+| `3m <= distance <= 5m` | `Careful` |
+| `> 5m` | `Safe` |
+
+`helmet_status` 输出三类：
+
+| GT / VLM 情况 | 输出 |
+|---|---|
+| `worn_secured` / `worn_unsecured` / `worn_unknown` | `worn` |
+| `absent` / `in_hand` | `absent` |
+| 看不清 | `uncertain` |
+
+### 3. 如果这张图有 GT，顺手评估
+
+work-zone 数据集里的图可以加 `--eval-out`，会和 `worker_gt_merged.csv` 做匹配并输出单图评估：
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.workzone_report `
+  --image work-zone-safety-rgbd-dataset\images\Garage1_000840.png `
+  --checkpoint runs\workzone\workzone_yolo_ft_distance_head.pt `
+  --base-model runs\yolo\workzone_yolo11n_960_e30\weights\best.pt `
+  --detector runs\yolo\workzone_yolo11n_960_e30\weights\best.pt `
+  --out runs\workzone\single_report.json `
+  --eval-out runs\workzone\single_report_eval.json `
+  --device cuda:0
+```
+
+### 4. 批量评估 20 张图
+
+VLM 支持 batch。下面命令会先本地跑 20 张图的检测和距离，再一次性把 20 张带框图发给 Qwen：
+
+```powershell
+D:\coding\anaconda\envs\qwen\python.exe -m human_detect.eval_workzone_report `
+  --labels runs\workzone\workzone_depth.eval.csv `
+  --gt-csv work-zone-safety-rgbd-dataset\annotations\worker_gt_merged.csv `
+  --out-dir runs\workzone\qwen3_vl_32b_eval20_batch20_ft_head `
+  --limit 20 `
+  --vlm-batch-size 20 `
+  --checkpoint runs\workzone\workzone_yolo_ft_distance_head.pt `
+  --base-model runs\yolo\workzone_yolo11n_960_e30\weights\best.pt `
+  --detector runs\yolo\workzone_yolo11n_960_e30\weights\best.pt `
+  --device cuda:0
+```
+
+输出目录：
+
+```text
+runs/workzone/qwen3_vl_32b_eval20_batch20_ft_head/
+├─ summary.json       # 总体准确率
+├─ per_worker.csv     # 每个 worker 的预测/GT 对比
+├─ reports/           # 每张图的最终 JSON
+└─ annotated/         # 画了 W1/W2 编号的图
+```
+
+当前 20 张 smoke test 结果：
+
+| 字段 | 结果 |
+|---|---:|
+| worker 匹配 | `24 / 24 = 100.0%` |
+| distance MAE | `1.060m` |
+| distance_band | `18 / 21 = 85.7%` |
+| high_visibility_vest | `22 / 22 = 100.0%` |
+| helmet_status | `20 / 23 = 87.0%` |
+| orientation | `16 / 23 = 69.6%` |
+| occlusion_level | `19 / 23 = 82.6%` |
+
+### 5. 新图注意事项
+
+新图没有 GT 时，只运行第 2 步即可。输出 JSON 里会有 `distance_to_equipment_m` 和视觉属性，但不会有 accuracy。
+
+如果不是 work-zone 这类相机视角，距离可能会漂。当前更可靠的是安全等级 `Close / Careful / Safe`，数值米数在远处小人上仍可能有 outlier。

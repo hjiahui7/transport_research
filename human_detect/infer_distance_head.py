@@ -66,75 +66,106 @@ def infer_distance_head(
     device: str = "cuda:0",
     half: bool = True,
 ) -> tuple[dict[str, Any], list[np.ndarray]]:
-    image_path = Path(image_path)
-    checkpoint_path = Path(checkpoint_path)
-    checkpoint = torch.load(checkpoint_path, map_location="cpu")
-    image_size = int(imgsz or checkpoint["image_size"])
-    base_model_path = str(base_model or checkpoint["model"])
-    detector_path = str(detector or base_model_path)
-    torch_device = torch.device(device if torch.cuda.is_available() or not str(device).startswith("cuda") else "cpu")
-
-    image_bgr = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
-    if image_bgr is None:
-        raise FileNotFoundError(image_path)
-    image_height, image_width = image_bgr.shape[:2]
-
-    detections = _detect_person_boxes(
-        image_path,
-        detector=detector_path,
-        imgsz=image_size,
+    estimator = DistanceHeadEstimator(
+        checkpoint_path=checkpoint_path,
+        base_model=base_model,
+        detector=detector,
+        imgsz=imgsz,
         conf=conf,
-        device=str(torch_device),
+        device=device,
         half=half,
     )
+    return estimator.infer(image_path)
 
-    yolo_model, _channels, strides = load_frozen_yolo_feature_model(base_model_path, device=str(torch_device))
-    head = YoloGridDistanceHead(checkpoint["channels"], init_distance_m=3.0).to(torch_device)
-    head.load_state_dict(checkpoint["head_state_dict"])
-    head.eval()
 
-    image_tensor = _load_square_rgb_tensor(image_path, image_size).to(torch_device)
-    with torch.no_grad():
-        features = extract_yolo_detect_features(yolo_model, image_tensor)
-        predictions = head(features)
+class DistanceHeadEstimator:
+    def __init__(
+        self,
+        *,
+        checkpoint_path: str | Path,
+        base_model: str | Path | None = None,
+        detector: str | Path | None = None,
+        imgsz: int | None = None,
+        conf: float = 0.25,
+        device: str = "cuda:0",
+        half: bool = True,
+    ) -> None:
+        from ultralytics import YOLO
 
-    original_boxes = [det["bbox_xyxy"] for det in detections]
-    scaled_boxes = _scale_boxes_to_square(original_boxes, image_width=image_width, image_height=image_height, image_size=image_size)
-    distances = predict_distance_for_boxes(predictions, scaled_boxes, strides=strides)
+        self.checkpoint_path = Path(checkpoint_path)
+        self.checkpoint = torch.load(self.checkpoint_path, map_location="cpu")
+        self.image_size = int(imgsz or self.checkpoint["image_size"])
+        self.base_model_path = str(base_model or self.checkpoint["model"])
+        self.detector_path = str(detector or self.base_model_path)
+        self.device = torch.device(device if torch.cuda.is_available() or not str(device).startswith("cuda") else "cpu")
+        self.conf = conf
+        self.half = half
 
-    persons: list[dict[str, Any]] = []
-    masks: list[np.ndarray] = []
-    for idx, (det, distance) in enumerate(zip(detections, distances)):
-        mask = _bbox_mask(det["bbox_xyxy"], image_width, image_height)
-        persons.append(
-            {
-                "id": idx,
-                "score": det["score"],
-                "bbox_xyxy": [float(value) for value in det["bbox_xyxy"]],
-                "mask_area_px": int(mask.sum()),
-                "mask_source": "bbox",
-                "z_depth_m": None,
-                "distance_m": float(distance),
-                "bearing_yaw_deg": None,
-                "elevation_pitch_deg": None,
-                "facing_yaw_deg": None,
-                "distance_source": "yolo_distance_head",
-            }
+        self.detector_model = YOLO(self.detector_path)
+        self.yolo_model, _channels, self.strides = load_frozen_yolo_feature_model(self.base_model_path, device=str(self.device))
+        self.head = YoloGridDistanceHead(self.checkpoint["channels"], init_distance_m=3.0).to(self.device)
+        self.head.load_state_dict(self.checkpoint["head_state_dict"])
+        self.head.eval()
+
+    def infer(self, image_path: str | Path) -> tuple[dict[str, Any], list[np.ndarray]]:
+        image_path = Path(image_path)
+
+        image_bgr = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
+        if image_bgr is None:
+            raise FileNotFoundError(image_path)
+        image_height, image_width = image_bgr.shape[:2]
+
+        detections = _detect_person_boxes_with_model(
+            self.detector_model,
+            image_path,
+            imgsz=self.image_size,
+            conf=self.conf,
+            device=str(self.device),
+            half=self.half,
         )
-        masks.append(mask)
 
-    result = {
-        "image_path": str(image_path),
-        "image_size": {"width": image_width, "height": image_height},
-        "scheme": "yolo_distance_head",
-        "models": {
-            "checkpoint": str(checkpoint_path),
-            "base_model": base_model_path,
-            "detector": detector_path,
-        },
-        "persons": persons,
-    }
-    return result, masks
+        image_tensor = _load_square_rgb_tensor(image_path, self.image_size).to(self.device)
+        with torch.no_grad():
+            features = extract_yolo_detect_features(self.yolo_model, image_tensor)
+            predictions = self.head(features)
+
+        original_boxes = [det["bbox_xyxy"] for det in detections]
+        scaled_boxes = _scale_boxes_to_square(original_boxes, image_width=image_width, image_height=image_height, image_size=self.image_size)
+        distances = predict_distance_for_boxes(predictions, scaled_boxes, strides=self.strides)
+
+        persons: list[dict[str, Any]] = []
+        masks: list[np.ndarray] = []
+        for idx, (det, distance) in enumerate(zip(detections, distances)):
+            mask = _bbox_mask(det["bbox_xyxy"], image_width, image_height)
+            persons.append(
+                {
+                    "id": idx,
+                    "score": det["score"],
+                    "bbox_xyxy": [float(value) for value in det["bbox_xyxy"]],
+                    "mask_area_px": int(mask.sum()),
+                    "mask_source": "bbox",
+                    "z_depth_m": None,
+                    "distance_m": float(distance),
+                    "bearing_yaw_deg": None,
+                    "elevation_pitch_deg": None,
+                    "facing_yaw_deg": None,
+                    "distance_source": "yolo_distance_head",
+                }
+            )
+            masks.append(mask)
+
+        result = {
+            "image_path": str(image_path),
+            "image_size": {"width": image_width, "height": image_height},
+            "scheme": "yolo_distance_head",
+            "models": {
+                "checkpoint": str(self.checkpoint_path),
+                "base_model": self.base_model_path,
+                "detector": self.detector_path,
+            },
+            "persons": persons,
+        }
+        return result, masks
 
 
 def _detect_person_boxes(
@@ -149,6 +180,18 @@ def _detect_person_boxes(
     from ultralytics import YOLO
 
     model = YOLO(detector)
+    return _detect_person_boxes_with_model(model, image_path, imgsz=imgsz, conf=conf, device=device, half=half)
+
+
+def _detect_person_boxes_with_model(
+    model,
+    image_path: Path,
+    *,
+    imgsz: int,
+    conf: float,
+    device: str,
+    half: bool,
+) -> list[dict[str, Any]]:
     results = model.predict(
         source=str(image_path),
         imgsz=imgsz,

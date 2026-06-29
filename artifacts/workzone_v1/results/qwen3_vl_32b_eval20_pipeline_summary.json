@@ -1,0 +1,41 @@
+{
+  "pred_workers": 24,
+  "gt_workers": 24,
+  "matched": 24,
+  "match_rate": 1.0,
+  "metrics": {
+    "high_visibility_vest": {
+      "correct": 22,
+      "total": 22,
+      "accuracy": 1.0
+    },
+    "helmet_status": {
+      "correct": 20,
+      "total": 23,
+      "accuracy": 0.8695652173913043
+    },
+    "orientation": {
+      "correct": 16,
+      "total": 23,
+      "accuracy": 0.6956521739130435
+    },
+    "occlusion_level": {
+      "correct": 19,
+      "total": 23,
+      "accuracy": 0.8260869565217391
+    },
+    "distance_band": {
+      "correct": 18,
+      "total": 21,
+      "accuracy": 0.8571428571428571
+    },
+    "distance_mae_m": 1.0599982293207075
+  },
+  "model": "qwen3-vl-32b-thinking",
+  "labels": "runs\\workzone\\workzone_depth.eval.csv",
+  "gt_csv": "work-zone-safety-rgbd-dataset\\annotations\\worker_gt_merged.csv",
+  "images": 20,
+  "vlm_batch_size": 20,
+  "reports_dir": "runs\\workzone\\qwen3_vl_32b_eval20_batch20_ft_head\\reports",
+  "annotated_dir": "runs\\workzone\\qwen3_vl_32b_eval20_batch20_ft_head\\annotated"
+}

@@ -1,0 +1,20 @@
+{
+  "dataset_root": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\work-zone-safety-rgbd-dataset",
+  "yolo_out": "data\\workzone_yolo_person",
+  "labels_out": "runs\\workzone",
+  "seed": 7,
+  "val_fraction": 0.2,
+  "image_width": 960,
+  "image_height": 720,
+  "total_images": 500,
+  "total_workers": 806,
+  "train_images": 400,
+  "val_images": 100,
+  "train_workers_all": 645,
+  "val_workers_all": 161,
+  "train_depth_rows": 523,
+  "val_depth_rows": 135,
+  "yaml": "data\\workzone_yolo_person\\workzone_person.yaml",
+  "train_csv": "runs\\workzone\\workzone_depth.train.csv",
+  "eval_csv": "runs\\workzone\\workzone_depth.eval.csv"
+}
