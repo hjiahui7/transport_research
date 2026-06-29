@@ -8,6 +8,7 @@
 artifacts/workzone_v1/
 ├─ models/
 │  ├─ workzone_yolo11n_person_detector_best.pt
+│  ├─ workzone_distance_head_base_yolo.pt
 │  ├─ workzone_distance_head_ft_yolo.pt
 │  └─ workzone_moge_calibrator.joblib
 ├─ qwen_prompt.md
@@ -30,6 +31,7 @@ artifacts/workzone_v1/
 | 文件 | 来源 | 用途 |
 |---|---|---|
 | `workzone_yolo11n_person_detector_best.pt` | `runs/yolo/workzone_yolo11n_960_e30/weights/best.pt` | work-zone fine-tuned YOLO 人体检测器 |
+| `workzone_distance_head_base_yolo.pt` | `runs/workzone/workzone_yolo_distance_head.pt` | 原方案一 base YOLO distance head |
 | `workzone_distance_head_ft_yolo.pt` | `runs/workzone/workzone_yolo_ft_distance_head.pt` | 新方案一 distance head |
 | `workzone_moge_calibrator.joblib` | `runs/workzone/scheme2_workzone_calibrator.joblib` | 新方案二 MoGe 后处理 calibrator |
 

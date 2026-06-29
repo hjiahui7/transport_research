@@ -11,15 +11,10 @@ runs/
 *.onnx
 *.engine
 
-# Small, curated CSV/JSON/YAML result package for GitHub.
+# Small, curated model/result package for GitHub.
 !artifacts/
 !artifacts/**
-artifacts/models/
 
-# Small inference models are intentionally committed.
-!models/
-!models/*.pt
-!models/*.joblib
 *.zip
 bundle_staging/
 bundle_verify/

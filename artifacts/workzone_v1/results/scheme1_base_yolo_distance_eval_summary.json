@@ -13,9 +13,9 @@
   "band_accuracy": 0.9481481481481482,
   "scheme": "yolo_distance_head",
   "labels": "runs\\workzone\\workzone_depth.eval.csv",
-  "checkpoint": "runs\\workzone\\workzone_yolo_distance_head.pt",
-  "base_model": "models\\yolo11n.pt",
-  "detector": "models\\yolo11n.pt",
+  "checkpoint": "artifacts\\workzone_v1\\models\\workzone_distance_head_base_yolo.pt",
+  "base_model": "artifacts\\rawalk_v1\\models\\rawalk_scheme1_yolo11n_base.pt",
+  "detector": "artifacts\\rawalk_v1\\models\\rawalk_scheme1_yolo11n_base.pt",
   "iou_threshold": 0.3,
   "images": 96
 }

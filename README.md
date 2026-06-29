@@ -79,7 +79,7 @@ runs/workzone/qwen3_vl_32b_eval20_batch20_ft_head/summary.json
 artifacts/workzone_v1/
 ```
 
-Rawalk/EgoHumans 旧模型也已从根目录 `models/` 复制并改名整理到：
+Rawalk/EgoHumans 旧模型已改名整理到：
 
 ```text
 artifacts/rawalk_v1/models/
@@ -124,7 +124,8 @@ human_detect_models_data_bundle.zip
 把它解压到项目根目录后，会得到：
 
 ```text
-models/
+artifacts/rawalk_v1/models/
+artifacts/workzone_v1/models/
 artifacts/data/
 README_BUNDLE.md
 ```
@@ -138,8 +139,8 @@ README_BUNDLE.md
 ```powershell
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.infer_distance_head `
   --image path\to\image.jpg `
-  --checkpoint models\yolo_distance_head_all_step10_m20.pt `
-  --base-model models\yolo11n.pt `
+  --checkpoint artifacts\rawalk_v1\models\rawalk_scheme1_distance_head.pt `
+  --base-model artifacts\rawalk_v1\models\rawalk_scheme1_yolo11n_base.pt `
   --out runs\scheme1_distance_head.json `
   --vis runs\scheme1_distance_head.png `
   --device cuda:0 `
@@ -159,8 +160,8 @@ persons[].distance_m
 ```powershell
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.infer `
   --image path\to\image.jpg `
-  --detector models\rawalk_yolo11s_960_e20_best.pt `
-  --calibrator models\rawalk_ego_scheme2_calibrator.joblib `
+  --detector artifacts\rawalk_v1\models\rawalk_scheme2_yolo11s_person_detector_best.pt `
+  --calibrator artifacts\rawalk_v1\models\rawalk_scheme2_moge_calibrator.joblib `
   --out runs\scheme2_moge_calibrated.json `
   --vis runs\scheme2_moge_calibrated.png `
   --imgsz 960 `
@@ -186,7 +187,8 @@ data/media/rawalk/disk1/rawalk/datasets/ego_exo/camera_ready/01_tagging
 GitHub 里放轻量模型和结果文件：
 
 ```text
-models/
+artifacts/rawalk_v1/models/
+artifacts/workzone_v1/models/
 artifacts/data/
 ```
 
@@ -198,14 +200,14 @@ data/rawalk_yolo_person     # YOLO 训练图片和标签，大约 3.36GB
 runs/                       # 训练过程和模型输出
 ```
 
-`models/` 里包含直接推理需要的小模型：
+`artifacts/rawalk_v1/models/` 里包含 Rawalk/EgoHumans 旧实验直接推理需要的小模型：
 
 | 文件 | 用途 |
 |---|---|
-| `models/yolo11n.pt` | 方案一 distance head 的 YOLO base model |
-| `models/yolo_distance_head_all_step10_m20.pt` | 方案一训练好的 distance head |
-| `models/rawalk_yolo11s_960_e20_best.pt` | 方案二 fine-tuned Rawalk YOLO detector |
-| `models/rawalk_ego_scheme2_calibrator.joblib` | 方案二 MLP calibrator |
+| `artifacts/rawalk_v1/models/rawalk_scheme1_yolo11n_base.pt` | 方案一 distance head 的 YOLO base model |
+| `artifacts/rawalk_v1/models/rawalk_scheme1_distance_head.pt` | 方案一训练好的 distance head |
+| `artifacts/rawalk_v1/models/rawalk_scheme2_yolo11s_person_detector_best.pt` | 方案二 fine-tuned Rawalk YOLO detector |
+| `artifacts/rawalk_v1/models/rawalk_scheme2_moge_calibrator.joblib` | 方案二 MLP calibrator |
 
 `artifacts/data/` 里主要是：
 
@@ -319,7 +321,7 @@ D:\coding\anaconda\envs\qwen\python.exe -m human_detect.train_yolo_distance_head
 当前训练出的模型已复制到：
 
 ```text
-models/yolo_distance_head_all_step10_m20.pt
+artifacts/rawalk_v1/models/rawalk_scheme1_distance_head.pt
 ```
 
 #### 4. 方案一单图推理
@@ -327,8 +329,8 @@ models/yolo_distance_head_all_step10_m20.pt
 ```powershell
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.infer_distance_head `
   --image path\to\image.jpg `
-  --checkpoint models\yolo_distance_head_all_step10_m20.pt `
-  --base-model models\yolo11n.pt `
+  --checkpoint artifacts\rawalk_v1\models\rawalk_scheme1_distance_head.pt `
+  --base-model artifacts\rawalk_v1\models\rawalk_scheme1_yolo11n_base.pt `
   --out runs\scheme1_distance_head.json `
   --vis runs\scheme1_distance_head.png `
   --device cuda:0 `
@@ -404,7 +406,7 @@ mAP50-95: 0.854
 当前训练出的检测器已复制到：
 
 ```text
-models/rawalk_yolo11s_960_e20_best.pt
+artifacts/rawalk_v1/models/rawalk_scheme2_yolo11s_person_detector_best.pt
 ```
 
 #### 3. 生成/复用 ego 距离 GT
@@ -446,7 +448,7 @@ train split：
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.eval_rawalk_ego_depth `
   --labels runs\rawalk_ego_depth_all_step10_m20.train.csv `
   --out runs\rawalk_ego_scheme2_train_preds.csv `
-  --detector models\rawalk_yolo11s_960_e20_best.pt `
+  --detector artifacts\rawalk_v1\models\rawalk_scheme2_yolo11s_person_detector_best.pt `
   --imgsz 960 `
   --geom-size 640 `
   --device cuda:0 `
@@ -460,7 +462,7 @@ eval split：
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.eval_rawalk_ego_depth `
   --labels runs\rawalk_ego_depth_all_step10_m20.eval.csv `
   --out runs\rawalk_ego_scheme2_eval_preds.csv `
-  --detector models\rawalk_yolo11s_960_e20_best.pt `
+  --detector artifacts\rawalk_v1\models\rawalk_scheme2_yolo11s_person_detector_best.pt `
   --imgsz 960 `
   --geom-size 640 `
   --device cuda:0 `
@@ -484,7 +486,7 @@ D:\coding\anaconda\envs\qwen\python.exe -m human_detect.fit_calibrator `
 当前训练出的 calibrator 已复制到：
 
 ```text
-models/rawalk_ego_scheme2_calibrator.joblib
+artifacts/rawalk_v1/models/rawalk_scheme2_moge_calibrator.joblib
 ```
 
 #### 6. 方案二单图推理
@@ -492,8 +494,8 @@ models/rawalk_ego_scheme2_calibrator.joblib
 ```powershell
 D:\coding\anaconda\envs\qwen\python.exe -m human_detect.infer `
   --image path\to\image.jpg `
-  --detector models\rawalk_yolo11s_960_e20_best.pt `
-  --calibrator models\rawalk_ego_scheme2_calibrator.joblib `
+  --detector artifacts\rawalk_v1\models\rawalk_scheme2_yolo11s_person_detector_best.pt `
+  --calibrator artifacts\rawalk_v1\models\rawalk_scheme2_moge_calibrator.joblib `
   --out runs\scheme2_moge_calibrated.json `
   --vis runs\scheme2_moge_calibrated.png `
   --imgsz 960 `
@@ -749,4 +751,3 @@ runs/workzone/qwen3_vl_32b_eval20_batch20_ft_head/
 | helmet_status | `20 / 23 = 87.0%` |
 | orientation | `16 / 23 = 69.6%` |
 | occlusion_level | `19 / 23 = 82.6%` |
-
