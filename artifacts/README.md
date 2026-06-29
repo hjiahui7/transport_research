@@ -1,14 +1,28 @@
 # Artifacts
 
-这个目录只放处理后的 CSV/JSON/YAML 结果，不包含 Rawalk 原始图片、原始 3D pose 或训练过程输出。
+这个目录只放整理后的轻量模型、CSV/JSON/YAML 结果和说明文档，不包含 Rawalk 原始图片、原始 3D pose、work-zone 原始图片或训练过程输出。
 
-小模型权重已经放在仓库根目录的 `models/`：
+## 发布目录
+
+| 目录 | 内容 |
+|---|---|
+| `rawalk_v1/` | Rawalk/EgoHumans 旧实验模型，文件名已重新整理 |
+| `workzone_v1/` | work-zone 新实验模型、结果、20 图 JSON pipeline 输出和 Qwen prompt |
+| `data/` | Rawalk/EgoHumans 旧实验处理后的 CSV/JSON/YAML 结果 |
+
+仓库根目录的 `models/` 仍保留原始文件名，用于兼容旧命令：
 
 ```text
 models/yolo11n.pt
 models/yolo_distance_head_all_step10_m20.pt
 models/rawalk_yolo11s_960_e20_best.pt
 models/rawalk_ego_scheme2_calibrator.joblib
+```
+
+同一批模型也已整理到：
+
+```text
+artifacts/rawalk_v1/models/
 ```
 
 ## data

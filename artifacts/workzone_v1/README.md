@@ -10,6 +10,7 @@ artifacts/workzone_v1/
 │  ├─ workzone_yolo11n_person_detector_best.pt
 │  ├─ workzone_distance_head_ft_yolo.pt
 │  └─ workzone_moge_calibrator.joblib
+├─ qwen_prompt.md
 ├─ data_splits/
 │  ├─ workzone_depth.train.csv
 │  └─ workzone_depth.eval.csv
@@ -62,3 +63,17 @@ D:\coding\anaconda\envs\qwen\python.exe -m human_detect.workzone_report `
 ```
 
 这条命令输出最终 JSON，其中距离来自本地 distance head，PPE/安全帽/朝向/遮挡来自 Qwen VLM。
+
+## Qwen Prompt
+
+Qwen VLM 的实际 prompt 已单独整理到：
+
+```text
+artifacts/workzone_v1/qwen_prompt.md
+```
+
+代码位置在：
+
+```text
+human_detect/workzone_report.py
+```

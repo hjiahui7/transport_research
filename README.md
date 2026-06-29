@@ -79,6 +79,18 @@ runs/workzone/qwen3_vl_32b_eval20_batch20_ft_head/summary.json
 artifacts/workzone_v1/
 ```
 
+Rawalk/EgoHumans 旧模型也已从根目录 `models/` 复制并改名整理到：
+
+```text
+artifacts/rawalk_v1/models/
+```
+
+Qwen VLM 的 prompt 单独整理在：
+
+```text
+artifacts/workzone_v1/qwen_prompt.md
+```
+
 ## 环境
 
 默认使用已有 conda 环境 `qwen`：
