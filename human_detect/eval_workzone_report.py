@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
 import json
 import os
@@ -13,6 +14,8 @@ from .infer_distance_head import DistanceHeadEstimator
 from .workzone_report import (
     DEFAULT_BASE_URL,
     DEFAULT_MODEL,
+    DEFAULT_WORKZONE_CHECKPOINT,
+    DEFAULT_WORKZONE_DETECTOR,
     build_report,
     call_qwen_visual_attributes_batch,
     evaluate_report,
@@ -28,9 +31,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--gt-csv", default=r"work-zone-safety-rgbd-dataset\annotations\worker_gt_merged.csv")
     parser.add_argument("--out-dir", default=r"runs\workzone\qwen_eval20")
     parser.add_argument("--limit", type=int, default=20)
-    parser.add_argument("--checkpoint", default=r"runs\workzone\workzone_yolo_distance_head.pt")
-    parser.add_argument("--base-model", default=r"models\yolo11n.pt")
-    parser.add_argument("--detector", default=r"models\yolo11n.pt")
+    parser.add_argument("--checkpoint", default=DEFAULT_WORKZONE_CHECKPOINT)
+    parser.add_argument("--base-model", default=DEFAULT_WORKZONE_DETECTOR)
+    parser.add_argument("--detector", default=DEFAULT_WORKZONE_DETECTOR)
     parser.add_argument("--equipment-type", default="dump truck")
     parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--conf", type=float, default=0.25)
@@ -39,6 +42,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--api-key", default=os.environ.get("QWEN_API_KEY"))
     parser.add_argument("--model", default=os.environ.get("QWEN_MODEL", DEFAULT_MODEL))
     parser.add_argument("--vlm-batch-size", type=int, default=1, help="Number of annotated images per VLM request.")
+    parser.add_argument("--vlm-workers", type=int, default=1, help="Number of concurrent VLM requests.")
+    parser.add_argument("--api-timeout", type=float, default=180.0, help="VLM request timeout in seconds.")
     parser.add_argument("--skip-vlm", action="store_true")
     return parser
 
@@ -75,33 +80,46 @@ def main(argv: list[str] | None = None) -> int:
             skip_vlm=True,
         )
         report_results.append((image_path, report_result))
-        print(f"[local {image_index}/{len(image_paths)}] {image_path.name}: workers={len(report_result['internal_workers'])}")
+        print(f"[local {image_index}/{len(image_paths)}] {image_path.name}: workers={len(report_result['internal_workers'])}", flush=True)
 
     if not args.skip_vlm:
         if not args.api_key:
             raise RuntimeError("QWEN_API_KEY is required unless --skip-vlm is used.")
-        batch_size = max(1, args.vlm_batch_size)
-        for batch_index, start in enumerate(range(0, len(report_results), batch_size), start=1):
-            chunk = report_results[start : start + batch_size]
-            items = [
-                {
-                    "image_id": image_path.name,
-                    "annotated_image": report_result["annotated_image"],
-                    "workers": report_result["internal_workers"],
+        batches = make_vlm_batches(report_results, batch_size=max(1, args.vlm_batch_size))
+        worker_count = max(1, min(args.vlm_workers, len(batches)))
+        if worker_count == 1:
+            for batch in batches:
+                batch_attrs, batch_status = request_vlm_batch(
+                    batch["items"],
+                    api_base=args.api_base,
+                    api_key=args.api_key,
+                    model=args.model,
+                    timeout=args.api_timeout,
+                )
+                merge_batch_attrs(batch["chunk"], batch_attrs)
+                print(f"[vlm batch {batch['index']}/{len(batches)}] images={len(batch['chunk'])} status={batch_status}", flush=True)
+        else:
+            with ThreadPoolExecutor(max_workers=worker_count) as executor:
+                futures = {
+                    executor.submit(
+                        request_vlm_batch,
+                        batch["items"],
+                        api_base=args.api_base,
+                        api_key=args.api_key,
+                        model=args.model,
+                        timeout=args.api_timeout,
+                    ): batch
+                    for batch in batches
                 }
-                for image_path, report_result in chunk
-                if report_result["internal_workers"]
-            ]
-            batch_attrs = call_qwen_visual_attributes_batch(
-                items,
-                api_base=args.api_base,
-                api_key=args.api_key,
-                model=args.model,
-            )
-            for image_path, report_result in chunk:
-                attrs = batch_attrs.get(image_path.name, {"workers": []})
-                merge_vlm_attributes(report_result["internal_workers"], attrs)
-            print(f"[vlm batch {batch_index}] images={len(chunk)}")
+                for future in as_completed(futures):
+                    batch = futures[future]
+                    batch_attrs, batch_status = future.result()
+                    merge_batch_attrs(batch["chunk"], batch_attrs)
+                    print(
+                        f"[vlm batch {batch['index']}/{len(batches)}] images={len(batch['chunk'])} "
+                        f"workers={len(batch['items'])} status={batch_status}",
+                        flush=True,
+                    )
 
     per_worker_rows: list[dict[str, Any]] = []
     per_image: list[dict[str, Any]] = []
@@ -122,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         for row in eval_result["per_worker"]:
             per_worker_rows.append(flatten_worker_row(image_path.name, row))
-        print(f"[eval {image_index}/{len(image_paths)}] {image_path.name}: matched={eval_result['matched']}/{eval_result['gt_workers']}")
+        print(f"[eval {image_index}/{len(image_paths)}] {image_path.name}: matched={eval_result['matched']}/{eval_result['gt_workers']}", flush=True)
 
     summary = aggregate_metrics(per_image, per_worker_rows)
     summary.update(
@@ -132,6 +150,8 @@ def main(argv: list[str] | None = None) -> int:
             "gt_csv": str(Path(args.gt_csv)),
             "images": len(image_paths),
             "vlm_batch_size": max(1, args.vlm_batch_size),
+            "vlm_workers": max(1, args.vlm_workers),
+            "api_timeout_s": args.api_timeout,
             "reports_dir": str(reports_dir),
             "annotated_dir": str(annotated_dir),
         }
@@ -140,6 +160,57 @@ def main(argv: list[str] | None = None) -> int:
     write_worker_csv(out_dir / "per_worker.csv", per_worker_rows)
     print(json.dumps(summary, indent=2, ensure_ascii=False))
     return 0
+
+
+def make_vlm_batches(
+    report_results: list[tuple[Path, dict[str, Any]]],
+    *,
+    batch_size: int,
+) -> list[dict[str, Any]]:
+    batches: list[dict[str, Any]] = []
+    for batch_index, start in enumerate(range(0, len(report_results), batch_size), start=1):
+        chunk = report_results[start : start + batch_size]
+        items = [
+            {
+                "image_id": image_path.name,
+                "annotated_image": report_result["annotated_image"],
+                "workers": report_result["internal_workers"],
+            }
+            for image_path, report_result in chunk
+            if report_result["internal_workers"]
+        ]
+        batches.append({"index": batch_index, "chunk": chunk, "items": items})
+    return batches
+
+
+def request_vlm_batch(
+    items: list[dict[str, Any]],
+    *,
+    api_base: str,
+    api_key: str,
+    model: str,
+    timeout: float,
+) -> tuple[dict[str, dict[str, Any]], str]:
+    try:
+        batch_attrs = call_qwen_visual_attributes_batch(
+            items,
+            api_base=api_base,
+            api_key=api_key,
+            model=model,
+            timeout=timeout,
+        )
+        return batch_attrs, "ok"
+    except Exception as exc:  # Keep full-run outputs even if one remote VLM call fails.
+        return {}, f"failed: {type(exc).__name__}: {exc}"
+
+
+def merge_batch_attrs(
+    chunk: list[tuple[Path, dict[str, Any]]],
+    batch_attrs: dict[str, dict[str, Any]],
+) -> None:
+    for image_path, report_result in chunk:
+        attrs = batch_attrs.get(image_path.name, {"workers": []})
+        merge_vlm_attributes(report_result["internal_workers"], attrs)
 
 
 def select_image_paths(labels_csv: str | Path, *, limit: int) -> list[str]:

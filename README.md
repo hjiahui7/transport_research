@@ -73,6 +73,26 @@ runs/workzone/qwen3_vl_32b_eval20_batch20_ft_head/summary.json
 
 同一批 20 图里，旧方案一的 distance MAE 是 `1.481m`；换成新方案一后降到 `1.060m`，下降约 `28.4%`。20 图只是 smoke test，波动会比 100 图 eval 大，正式距离指标以上面的全量 eval 为准。
 
+新方案一 + `qwen3.6-flash` 的 500 图全量 JSON pipeline 结果：
+
+```text
+artifacts/workzone_v1/results/qwen3_6_flash_all500_pipeline_summary.json
+artifacts/workzone_v1/results/qwen3_6_flash_all500_pipeline_per_worker.csv
+artifacts/workzone_v1/results/qwen3_6_flash_all500_reports/
+```
+
+| 字段 | 结果 |
+|---|---:|
+| 图片数 | `500` |
+| worker 匹配 | `801 / 806 = 99.4%` |
+| distance MAE | `0.188m` |
+| distance_band | `626 / 656 = 95.4%` |
+| high_visibility_vest | `774 / 786 = 98.5%` |
+| helmet_status | `750 / 786 = 95.4%` |
+| orientation | `642 / 787 = 81.6%` |
+| occlusion_level | `601 / 793 = 75.8%` |
+| VLM 设置 | `qwen3.6-flash, batch=10, workers=5` |
+
 本轮 work-zone 新模型和结果已整理到：
 
 ```text

@@ -20,6 +20,8 @@ from .matching import bbox_iou
 
 DEFAULT_BASE_URL = "https://ws-2vah2d019k5467zo.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
 DEFAULT_MODEL = "qwen3.5-omni-flash"
+DEFAULT_WORKZONE_CHECKPOINT = r"artifacts\workzone_v1\models\workzone_distance_head_ft_yolo.pt"
+DEFAULT_WORKZONE_DETECTOR = r"artifacts\workzone_v1\models\workzone_yolo11n_person_detector_best.pt"
 
 
 @dataclass(frozen=True)
@@ -40,9 +42,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", required=True)
     parser.add_argument("--eval-out", default=None)
     parser.add_argument("--gt-csv", default=r"work-zone-safety-rgbd-dataset\annotations\worker_gt_merged.csv")
-    parser.add_argument("--checkpoint", default=r"runs\workzone\workzone_yolo_distance_head.pt")
-    parser.add_argument("--base-model", default=r"models\yolo11n.pt")
-    parser.add_argument("--detector", default=r"models\yolo11n.pt")
+    parser.add_argument("--checkpoint", default=DEFAULT_WORKZONE_CHECKPOINT)
+    parser.add_argument("--base-model", default=DEFAULT_WORKZONE_DETECTOR)
+    parser.add_argument("--detector", default=DEFAULT_WORKZONE_DETECTOR)
     parser.add_argument("--equipment-type", default="dump truck")
     parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--conf", type=float, default=0.25)
@@ -50,6 +52,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--api-base", default=os.environ.get("QWEN_BASE_URL", DEFAULT_BASE_URL))
     parser.add_argument("--api-key", default=os.environ.get("QWEN_API_KEY"))
     parser.add_argument("--model", default=os.environ.get("QWEN_MODEL", DEFAULT_MODEL))
+    parser.add_argument("--api-timeout", type=float, default=180.0, help="VLM request timeout in seconds.")
     parser.add_argument("--annotated-image", default=None)
     parser.add_argument("--skip-vlm", action="store_true", help="Return uncertain visual attributes without calling the VLM.")
     return parser
@@ -69,6 +72,7 @@ def main(argv: list[str] | None = None) -> int:
         api_base=args.api_base,
         api_key=args.api_key,
         model=args.model,
+        api_timeout=args.api_timeout,
         annotated_image=args.annotated_image,
         skip_vlm=args.skip_vlm,
     )
@@ -101,6 +105,7 @@ def run_workzone_report(
     api_base: str,
     api_key: str | None,
     model: str,
+    api_timeout: float = 180.0,
     annotated_image: str | Path | None = None,
     skip_vlm: bool = False,
 ) -> dict[str, Any]:
@@ -119,6 +124,7 @@ def run_workzone_report(
         api_base=api_base,
         api_key=api_key,
         model=model,
+        api_timeout=api_timeout,
         annotated_image=annotated_image,
         skip_vlm=skip_vlm,
     )
@@ -132,6 +138,7 @@ def run_workzone_report_with_estimator(
     api_base: str,
     api_key: str | None,
     model: str,
+    api_timeout: float = 180.0,
     annotated_image: str | Path | None = None,
     skip_vlm: bool = False,
 ) -> dict[str, Any]:
@@ -166,6 +173,7 @@ def run_workzone_report_with_estimator(
             api_base=api_base,
             api_key=api_key,
             model=model,
+            timeout=api_timeout,
         )
         merge_vlm_attributes(internal_workers, vlm_attrs)
 
@@ -201,6 +209,7 @@ def call_qwen_visual_attributes(
     api_base: str,
     api_key: str,
     model: str,
+    timeout: float = 180.0,
 ) -> dict[str, Any]:
     image_b64 = base64.b64encode(Path(image_path).read_bytes()).decode("ascii")
     worker_lines = "\n".join(
@@ -233,7 +242,7 @@ Rules:
 - orientation is relative to camera view.
 - Do not estimate distance.
 """.strip()
-    client = OpenAI(api_key=api_key, base_url=api_base)
+    client = OpenAI(api_key=api_key, base_url=api_base, timeout=timeout)
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -258,6 +267,7 @@ def call_qwen_visual_attributes_batch(
     api_base: str,
     api_key: str,
     model: str,
+    timeout: float = 180.0,
 ) -> dict[str, dict[str, Any]]:
     if not items:
         return {}
@@ -285,7 +295,7 @@ def call_qwen_visual_attributes_batch(
             ]
         )
 
-    client = OpenAI(api_key=api_key, base_url=api_base)
+    client = OpenAI(api_key=api_key, base_url=api_base, timeout=timeout)
     response = client.chat.completions.create(
         model=model,
         messages=[

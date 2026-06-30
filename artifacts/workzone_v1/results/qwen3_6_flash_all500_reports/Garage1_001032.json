@@ -1,0 +1,16 @@
+{
+  "image_id": "Garage1_001032.png",
+  "equipment_type": "dump truck",
+  "worker_count": 1,
+  "workers": [
+    {
+      "worker_index": 1,
+      "distance_to_equipment_m": 4.465,
+      "distance_band": "Careful",
+      "high_visibility_vest": true,
+      "helmet_status": "absent",
+      "orientation": "Side",
+      "occlusion_level": "none"
+    }
+  ]
+}

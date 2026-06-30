@@ -1,0 +1,45 @@
+{
+  "pred_workers": 822,
+  "gt_workers": 806,
+  "matched": 801,
+  "match_rate": 0.9937965260545906,
+  "metrics": {
+    "high_visibility_vest": {
+      "correct": 774,
+      "total": 786,
+      "accuracy": 0.9847328244274809
+    },
+    "helmet_status": {
+      "correct": 750,
+      "total": 786,
+      "accuracy": 0.9541984732824428
+    },
+    "orientation": {
+      "correct": 642,
+      "total": 787,
+      "accuracy": 0.8157560355781448
+    },
+    "occlusion_level": {
+      "correct": 601,
+      "total": 793,
+      "accuracy": 0.7578814627994955
+    },
+    "distance_band": {
+      "correct": 626,
+      "total": 656,
+      "accuracy": 0.9542682926829268
+    },
+    "distance_mae_m": 0.18782930688420155
+  },
+  "model": "qwen3.6-flash",
+  "labels": "artifacts\\workzone_v1\\data_splits\\workzone_depth.all500.csv",
+  "gt_csv": "work-zone-safety-rgbd-dataset\\annotations\\worker_gt_merged.csv",
+  "images": 500,
+  "vlm_batch_size": 10,
+  "reports_dir": "artifacts\\workzone_v1\\results\\qwen3_6_flash_all500_reports",
+  "annotated_dir": "runs\\workzone\\qwen3_6_flash_all500_ft_head_b10_w5\\annotated",
+  "vlm_workers": 5,
+  "api_timeout_s": 120,
+  "vlm_failed_batches": 0,
+  "per_worker_csv": "artifacts\\workzone_v1\\results\\qwen3_6_flash_all500_pipeline_per_worker.csv"
+}
