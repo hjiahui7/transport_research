@@ -1,0 +1,16 @@
+{
+  "image_id": "Pave2_000246.png",
+  "equipment_type": "dump truck",
+  "worker_count": 1,
+  "workers": [
+    {
+      "worker_index": 1,
+      "distance_to_equipment_m": 15.954,
+      "distance_band": "Safe",
+      "high_visibility_vest": true,
+      "helmet_status": "worn",
+      "orientation": "Side",
+      "occlusion_level": "none"
+    }
+  ]
+}

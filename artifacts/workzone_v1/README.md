@@ -75,6 +75,27 @@ results/qwen3_6_flash_all500_reports/
 | occlusion_level | `601 / 793 = 75.8%` |
 | VLM 设置 | `qwen3.6-flash, batch=10, workers=5` |
 
+新增 500 图 VLM 对比结果：
+
+```text
+results/qwen3_vl_flash_all500_ft_head_summary.json
+results/qwen3_vl_flash_all500_ft_head_per_worker.csv
+results/qwen3_vl_flash_all500_ft_head_reports/
+results/qwen2_5_vl_3b_local_all500_ft_head_summary.json
+results/qwen2_5_vl_3b_local_all500_ft_head_per_worker.csv
+results/qwen2_5_vl_3b_local_all500_ft_head_reports/
+results/qwen3_6_flash_vlm_direct_distance_all500_summary.json
+results/qwen3_6_flash_vlm_direct_distance_all500_per_worker.csv
+results/qwen3_6_flash_vlm_direct_distance_all500_reports/
+```
+
+| 模型 / 路线 | 距离来源 | worker 匹配 | distance MAE | distance_band | high_visibility_vest | helmet_status | orientation | occlusion_level | 失败 batch |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `qwen3.6-flash` baseline 属性-only | 本地 fine-tuned YOLO + distance head | `801 / 806 = 99.4%` | `0.188m` | `626 / 656 = 95.4%` | `774 / 786 = 98.5%` | `750 / 786 = 95.4%` | `642 / 787 = 81.6%` | `601 / 793 = 75.8%` | `0` |
+| `qwen3-vl-flash` 属性-only | 本地 fine-tuned YOLO + distance head | `801 / 806 = 99.4%` | `0.188m` | `626 / 656 = 95.4%` | `692 / 786 = 88.0%` | `655 / 786 = 83.3%` | `486 / 787 = 61.8%` | `587 / 793 = 74.0%` | `0` |
+| `Qwen2.5-VL-3B-Instruct` 本地属性-only | 本地 fine-tuned YOLO + distance head | `801 / 806 = 99.4%` | `0.188m` | `626 / 656 = 95.4%` | `721 / 786 = 91.7%` | `611 / 786 = 77.7%` | `276 / 787 = 35.1%` | `581 / 793 = 73.3%` | `3` |
+| `qwen3.6-flash` VLM 直接估距 + 属性 | VLM 直接输出 distance_to_equipment_m | `801 / 806 = 99.4%` | `2.150m` | `397 / 656 = 60.5%` | `772 / 786 = 98.2%` | `751 / 786 = 95.5%` | `597 / 787 = 75.9%` | `593 / 793 = 74.8%` | `0` |
+
 ## 新方案一单图推理
 
 ```powershell

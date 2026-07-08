@@ -1,0 +1,51 @@
+{
+  "pred_workers": 822,
+  "gt_workers": 806,
+  "matched": 801,
+  "match_rate": 0.9937965260545906,
+  "metrics": {
+    "high_visibility_vest": {
+      "correct": 721,
+      "total": 786,
+      "accuracy": 0.9173027989821882
+    },
+    "helmet_status": {
+      "correct": 611,
+      "total": 786,
+      "accuracy": 0.77735368956743
+    },
+    "orientation": {
+      "correct": 276,
+      "total": 787,
+      "accuracy": 0.35069885641677256
+    },
+    "occlusion_level": {
+      "correct": 581,
+      "total": 793,
+      "accuracy": 0.7326607818411097
+    },
+    "distance_band": {
+      "correct": 626,
+      "total": 656,
+      "accuracy": 0.9542682926829268
+    },
+    "distance_mae_m": 0.18782930688420155
+  },
+  "model": "Qwen/Qwen2.5-VL-3B-Instruct",
+  "vlm_mode": "local_qwen_vl_attributes_only",
+  "labels": "artifacts\\workzone_v1\\data_splits\\workzone_depth.all500.csv",
+  "gt_csv": "work-zone-safety-rgbd-dataset\\annotations\\worker_gt_merged.csv",
+  "images": 500,
+  "vlm_batch_size": 1,
+  "vlm_failed_batches": 3,
+  "reports_dir": "runs\\workzone\\qwen2_5_vl_3b_local_all500_ft_head_original_prompt_b1_merged_final\\reports",
+  "annotated_dir": "runs\\workzone\\qwen2_5_vl_3b_local_all500_ft_head_original_prompt_b1_final\\annotated",
+  "per_worker_csv": "runs\\workzone\\qwen2_5_vl_3b_local_all500_ft_head_original_prompt_b1_merged_final\\per_worker.csv",
+  "merged_from": {
+    "base_dir": "runs\\workzone\\qwen2_5_vl_3b_local_all500_ft_head_original_prompt_b1_final",
+    "retry_dir": "runs\\workzone\\qwen2_5_vl_3b_local_retry_failed_original_prompt_b1_t2048",
+    "retry_images": 3
+  },
+  "retry_vlm_batch_size": 1,
+  "note": "local Qwen2.5-VL-3B full run; 3 images still produced empty JSON after retry"
+}

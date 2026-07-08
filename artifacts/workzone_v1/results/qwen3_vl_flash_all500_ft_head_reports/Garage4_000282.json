@@ -1,0 +1,43 @@
+{
+  "image_id": "Garage4_000282.png",
+  "equipment_type": "dump truck",
+  "worker_count": 4,
+  "workers": [
+    {
+      "worker_index": 1,
+      "distance_to_equipment_m": 6.022,
+      "distance_band": "Safe",
+      "high_visibility_vest": "uncertain",
+      "helmet_status": "uncertain",
+      "orientation": "uncertain",
+      "occlusion_level": "uncertain"
+    },
+    {
+      "worker_index": 2,
+      "distance_to_equipment_m": 6.022,
+      "distance_band": "Safe",
+      "high_visibility_vest": "uncertain",
+      "helmet_status": "uncertain",
+      "orientation": "uncertain",
+      "occlusion_level": "uncertain"
+    },
+    {
+      "worker_index": 3,
+      "distance_to_equipment_m": 5.855,
+      "distance_band": "Safe",
+      "high_visibility_vest": "uncertain",
+      "helmet_status": "uncertain",
+      "orientation": "uncertain",
+      "occlusion_level": "uncertain"
+    },
+    {
+      "worker_index": 4,
+      "distance_to_equipment_m": 7.461,
+      "distance_band": "Safe",
+      "high_visibility_vest": "uncertain",
+      "helmet_status": "uncertain",
+      "orientation": "uncertain",
+      "occlusion_level": "uncertain"
+    }
+  ]
+}
