@@ -25,9 +25,9 @@
       "accuracy": 0.7578814627994955
     },
     "distance_band": {
-      "correct": 626,
+      "correct": 630,
       "total": 656,
-      "accuracy": 0.9542682926829268
+      "accuracy": 0.9603658536585366
     },
     "distance_mae_m": 0.18782930688420155
   },

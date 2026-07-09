@@ -49,11 +49,13 @@ precision 0.993, recall 0.975, mAP50 0.994, mAP50-95 0.912
 
 距离全量 eval 结果：
 
+下面的 `distance_band` 已统一为 3/6m 口径：`<3m = Close`，`3-6m = Careful`，`>6m = Safe`。
+
 | 方案 | 检测/距离来源 | Eval 口径 | 距离 MAE | RMSE | 0.5m 内 | 1.0m 内 | distance_band |
 |---|---|---:|---:|---:|---:|---:|---:|
-| 原方案一：base YOLO + distance head | 官方 `yolo11n.pt` 特征 + distance head | 135 / 135 | 0.554m | 1.629m | 82.2% | 88.9% | 94.8% |
-| 新方案一：fine-tuned YOLO + distance head | work-zone YOLO 特征 + 新 distance head | 135 / 135 | 0.428m | 1.088m | 84.4% | 93.3% | 91.1% |
-| 新方案二：fine-tuned YOLO + MoGe + calibration | work-zone YOLO + MoGe + calibrator | 134 / 135 | **0.379m** | **0.983m** | **89.6%** | **95.5%** | **94.8%** |
+| 原方案一：base YOLO + distance head | 官方 `yolo11n.pt` 特征 + distance head | 135 / 135 | 0.554m | 1.629m | 82.2% | 88.9% | 97.8% |
+| 新方案一：fine-tuned YOLO + distance head | work-zone YOLO 特征 + 新 distance head | 135 / 135 | 0.428m | 1.088m | 84.4% | 93.3% | 90.4% |
+| 新方案二：fine-tuned YOLO + MoGe + calibration | work-zone YOLO + MoGe + calibrator | 134 / 135 | **0.379m** | **0.983m** | **89.6%** | **95.5%** | **95.5%** |
 
 新方案一 + Qwen VLM 的 20 图 JSON pipeline smoke test：
 
@@ -65,7 +67,7 @@ runs/workzone/qwen3_vl_32b_eval20_batch20_ft_head/summary.json
 |---|---:|
 | worker 匹配 | `24 / 24 = 100.0%` |
 | distance MAE | `1.060m` |
-| distance_band | `18 / 21 = 85.7%` |
+| distance_band | `19 / 21 = 90.5%` |
 | high_visibility_vest | `22 / 22 = 100.0%` |
 | helmet_status | `20 / 23 = 87.0%` |
 | orientation | `16 / 23 = 69.6%` |
@@ -86,7 +88,7 @@ artifacts/workzone_v1/results/qwen3_6_flash_all500_reports/
 | 图片数 | `500` |
 | worker 匹配 | `801 / 806 = 99.4%` |
 | distance MAE | `0.188m` |
-| distance_band | `626 / 656 = 95.4%` |
+| distance_band | `630 / 656 = 96.0%` |
 | high_visibility_vest | `774 / 786 = 98.5%` |
 | helmet_status | `750 / 786 = 95.4%` |
 | orientation | `642 / 787 = 81.6%` |
@@ -103,9 +105,9 @@ artifacts/workzone_v1/results/qwen3_6_flash_vlm_direct_distance_all500_summary.j
 
 | 模型 / 路线 | 距离来源 | worker 匹配 | distance MAE | distance_band | high_visibility_vest | helmet_status | orientation | occlusion_level | 失败 batch |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| `qwen3.6-flash` baseline 属性-only | 本地 fine-tuned YOLO + distance head | `801 / 806 = 99.4%` | `0.188m` | `626 / 656 = 95.4%` | `774 / 786 = 98.5%` | `750 / 786 = 95.4%` | `642 / 787 = 81.6%` | `601 / 793 = 75.8%` | `0` |
-| `qwen3-vl-flash` 属性-only | 本地 fine-tuned YOLO + distance head | `801 / 806 = 99.4%` | `0.188m` | `626 / 656 = 95.4%` | `692 / 786 = 88.0%` | `655 / 786 = 83.3%` | `486 / 787 = 61.8%` | `587 / 793 = 74.0%` | `0` |
-| `Qwen2.5-VL-3B-Instruct` 本地属性-only | 本地 fine-tuned YOLO + distance head | `801 / 806 = 99.4%` | `0.188m` | `626 / 656 = 95.4%` | `721 / 786 = 91.7%` | `611 / 786 = 77.7%` | `276 / 787 = 35.1%` | `581 / 793 = 73.3%` | `3` |
+| `qwen3.6-flash` baseline 属性-only | 本地 fine-tuned YOLO + distance head | `801 / 806 = 99.4%` | `0.188m` | `630 / 656 = 96.0%` | `774 / 786 = 98.5%` | `750 / 786 = 95.4%` | `642 / 787 = 81.6%` | `601 / 793 = 75.8%` | `0` |
+| `qwen3-vl-flash` 属性-only | 本地 fine-tuned YOLO + distance head | `801 / 806 = 99.4%` | `0.188m` | `630 / 656 = 96.0%` | `692 / 786 = 88.0%` | `655 / 786 = 83.3%` | `486 / 787 = 61.8%` | `587 / 793 = 74.0%` | `0` |
+| `Qwen2.5-VL-3B-Instruct` 本地属性-only | 本地 fine-tuned YOLO + distance head | `801 / 806 = 99.4%` | `0.188m` | `630 / 656 = 96.0%` | `721 / 786 = 91.7%` | `611 / 786 = 77.7%` | `276 / 787 = 35.1%` | `581 / 793 = 73.3%` | `3` |
 | `qwen3.6-flash` VLM 直接估距 + 属性 | VLM 直接输出 distance_to_equipment_m | `801 / 806 = 99.4%` | `2.150m` | `397 / 656 = 60.5%` | `772 / 786 = 98.2%` | `751 / 786 = 95.5%` | `597 / 787 = 75.9%` | `593 / 793 = 74.8%` | `0` |
 
 说明：
@@ -727,8 +729,8 @@ D:\coding\anaconda\envs\qwen\python.exe -m human_detect.workzone_report `
 | 距离 | 输出 |
 |---|---|
 | `< 3m` | `Close` |
-| `3m <= distance <= 5m` | `Careful` |
-| `> 5m` | `Safe` |
+| `3m <= distance <= 6m` | `Careful` |
+| `> 6m` | `Safe` |
 
 `helmet_status` 输出三类：
 
@@ -786,7 +788,7 @@ runs/workzone/qwen3_vl_32b_eval20_batch20_ft_head/
 |---|---:|
 | worker 匹配 | `24 / 24 = 100.0%` |
 | distance MAE | `1.060m` |
-| distance_band | `18 / 21 = 85.7%` |
+| distance_band | `19 / 21 = 90.5%` |
 | high_visibility_vest | `22 / 22 = 100.0%` |
 | helmet_status | `20 / 23 = 87.0%` |
 | orientation | `16 / 23 = 69.6%` |

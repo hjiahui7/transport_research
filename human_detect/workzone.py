@@ -175,6 +175,20 @@ def yolo_label_line(bbox_xyxy: tuple[float, float, float, float]) -> str:
     return f"0 {cx:.8f} {cy:.8f} {width:.8f} {height:.8f}"
 
 
+def distance_class_3_from_row(row: WorkzoneRow) -> str:
+    if row.depth_usable:
+        if row.depth_m < 3.0:
+            return "<3"
+        if row.depth_m <= 6.0:
+            return "3-6"
+        return ">6"
+    if row.distance_class_3 == "3-5":
+        return "3-6"
+    if row.distance_class_3 == ">5":
+        return ">6"
+    return row.distance_class_3
+
+
 def write_distance_csv(rows: list[WorkzoneRow], *, root: Path, out_path: Path) -> None:
     fieldnames = [
         "image_path",
@@ -215,7 +229,7 @@ def write_distance_csv(rows: list[WorkzoneRow], *, root: Path, out_path: Path) -
                     "bbox_y2": f"{y2:.6f}",
                     "depth_m": depth_value,
                     "distance_m": depth_value,
-                    "distance_class_3": row.distance_class_3,
+                    "distance_class_3": distance_class_3_from_row(row),
                     "depth_source": row.depth_source,
                     "scene_type": row.scene_type,
                     "recording": row.recording,

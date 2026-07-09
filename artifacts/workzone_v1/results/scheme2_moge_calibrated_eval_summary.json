@@ -13,7 +13,7 @@
     "within_1_0m": 0.34328358208955223,
     "within_0_5m_all_gt": 0.16296296296296298,
     "within_1_0m_all_gt": 0.34074074074074073,
-    "band_accuracy": 0.7089552238805971
+    "band_accuracy": 0.6716417910447762
   },
   "calibrated": {
     "matched": 134,
@@ -27,7 +27,7 @@
     "within_1_0m": 0.9552238805970149,
     "within_0_5m_all_gt": 0.8888888888888888,
     "within_1_0m_all_gt": 0.9481481481481482,
-    "band_accuracy": 0.9477611940298507
+    "band_accuracy": 0.9552238805970149
   },
   "calibrator": "runs\\workzone\\scheme2_workzone_calibrator.joblib",
   "calibrator_type": "gbr"

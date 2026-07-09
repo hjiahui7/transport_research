@@ -498,7 +498,7 @@ def greedy_matches(workers: list[dict[str, Any]], gt_workers: list[WorkzoneGtWor
 def distance_band_from_meters(distance_m: float) -> str:
     if distance_m < 3.0:
         return "Close"
-    if distance_m <= 5.0:
+    if distance_m <= 6.0:
         return "Careful"
     return "Safe"
 

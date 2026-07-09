@@ -6,7 +6,7 @@
     {
       "worker_index": 1,
       "distance_to_equipment_m": 5.634,
-      "distance_band": "Safe",
+      "distance_band": "Careful",
       "high_visibility_vest": "uncertain",
       "helmet_status": "uncertain",
       "orientation": "uncertain",

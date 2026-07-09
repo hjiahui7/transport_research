@@ -6,7 +6,7 @@
     {
       "worker_index": 1,
       "distance_to_equipment_m": 5.128,
-      "distance_band": "Safe",
+      "distance_band": "Careful",
       "high_visibility_vest": false,
       "helmet_status": "absent",
       "orientation": "Back",
@@ -15,7 +15,7 @@
     {
       "worker_index": 2,
       "distance_to_equipment_m": 5.991,
-      "distance_band": "Safe",
+      "distance_band": "Careful",
       "high_visibility_vest": false,
       "helmet_status": "absent",
       "orientation": "Back",

@@ -10,7 +10,7 @@
   "within_1_0m": 0.8888888888888888,
   "within_0_5m_all_gt": 0.8222222222222222,
   "within_1_0m_all_gt": 0.8888888888888888,
-  "band_accuracy": 0.9481481481481482,
+  "band_accuracy": 0.9777777777777777,
   "scheme": "yolo_distance_head",
   "labels": "runs\\workzone\\workzone_depth.eval.csv",
   "checkpoint": "artifacts\\workzone_v1\\models\\workzone_distance_head_base_yolo.pt",

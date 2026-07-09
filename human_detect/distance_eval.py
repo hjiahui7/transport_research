@@ -9,9 +9,9 @@ import numpy as np
 def distance_band(distance_m: float) -> str:
     if distance_m < 3.0:
         return "<3"
-    if distance_m <= 5.0:
-        return "3-5"
-    return ">5"
+    if distance_m <= 6.0:
+        return "3-6"
+    return ">6"
 
 
 def summarize_distance_errors(
