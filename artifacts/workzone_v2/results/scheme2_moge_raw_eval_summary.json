@@ -1,0 +1,18 @@
+{
+  "preds": "runs\\workzone_v2\\scheme2_eval_preds.csv",
+  "labels": "artifacts\\workzone_v2\\data_splits\\workzone_depth.eval.csv",
+  "raw": {
+    "matched": 332,
+    "total_gt": 339,
+    "match_rate": 0.9793510324483776,
+    "mae_m": 1.8558528734966944,
+    "rmse_m": 3.4535511706554387,
+    "bias_m": 1.719719860901662,
+    "absrel": 0.32089313070631814,
+    "within_0_5m": 0.12048192771084337,
+    "within_1_0m": 0.32831325301204817,
+    "within_0_5m_all_gt": 0.11799410029498525,
+    "within_1_0m_all_gt": 0.3215339233038348,
+    "band_accuracy": 0.6987951807228916
+  }
+}

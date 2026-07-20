@@ -10,7 +10,9 @@ from typing import Any
 
 import numpy as np
 
+from .calibration import load_calibrator
 from .infer_distance_head import DistanceHeadEstimator
+from .pipeline import DistanceEstimator
 from .workzone_report import (
     DEFAULT_BASE_URL,
     DEFAULT_MODEL,
@@ -34,6 +36,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--checkpoint", default=DEFAULT_WORKZONE_CHECKPOINT)
     parser.add_argument("--base-model", default=DEFAULT_WORKZONE_DETECTOR)
     parser.add_argument("--detector", default=DEFAULT_WORKZONE_DETECTOR)
+    parser.add_argument("--distance-mode", choices=["head", "moge"], default="head")
+    parser.add_argument("--calibrator", default=None, help="Calibration joblib used by --distance-mode moge.")
+    parser.add_argument("--geometry-model", default="Ruicheng/moge-2-vits-normal")
+    parser.add_argument("--geom-size", type=int, default=640)
+    parser.add_argument("--num-tokens", type=int, default=1200)
+    parser.add_argument("--half", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--equipment-type", default="dump truck")
     parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--conf", type=float, default=0.25)
@@ -57,14 +65,29 @@ def main(argv: list[str] | None = None) -> int:
     reports_dir.mkdir(parents=True, exist_ok=True)
     annotated_dir.mkdir(parents=True, exist_ok=True)
 
-    estimator = DistanceHeadEstimator(
-        checkpoint_path=args.checkpoint,
-        base_model=args.base_model,
-        detector=args.detector,
-        imgsz=args.imgsz,
-        conf=args.conf,
-        device=args.device,
-    )
+    if args.distance_mode == "moge":
+        if not args.calibrator:
+            raise ValueError("--calibrator is required with --distance-mode moge")
+        estimator = CalibratedMogeEstimator(
+            detector=args.detector,
+            geometry_model=args.geometry_model,
+            calibrator=args.calibrator,
+            imgsz=args.imgsz,
+            conf=args.conf,
+            geom_size=args.geom_size,
+            num_tokens=args.num_tokens,
+            device=args.device,
+            half=args.half,
+        )
+    else:
+        estimator = DistanceHeadEstimator(
+            checkpoint_path=args.checkpoint,
+            base_model=args.base_model,
+            detector=args.detector,
+            imgsz=args.imgsz,
+            conf=args.conf,
+            device=args.device,
+        )
 
     report_results: list[tuple[Path, dict[str, Any]]] = []
     for image_index, image_path in enumerate(image_paths, start=1):
@@ -152,6 +175,9 @@ def main(argv: list[str] | None = None) -> int:
             "vlm_batch_size": max(1, args.vlm_batch_size),
             "vlm_workers": max(1, args.vlm_workers),
             "api_timeout_s": args.api_timeout,
+            "distance_mode": args.distance_mode,
+            "detector": str(args.detector),
+            "calibrator": str(args.calibrator) if args.calibrator else None,
             "reports_dir": str(reports_dir),
             "annotated_dir": str(annotated_dir),
         }
@@ -160,6 +186,44 @@ def main(argv: list[str] | None = None) -> int:
     write_worker_csv(out_dir / "per_worker.csv", per_worker_rows)
     print(json.dumps(summary, indent=2, ensure_ascii=False))
     return 0
+
+
+class CalibratedMogeEstimator:
+    """Adapter that exposes calibrated MoGe distance through the report estimator interface."""
+
+    def __init__(
+        self,
+        *,
+        detector: str,
+        geometry_model: str,
+        calibrator: str,
+        imgsz: int,
+        conf: float,
+        geom_size: int,
+        num_tokens: int,
+        device: str,
+        half: bool,
+    ) -> None:
+        self.estimator = DistanceEstimator(
+            detector=detector,
+            geometry_model=geometry_model,
+            imgsz=imgsz,
+            conf=conf,
+            geom_size=geom_size,
+            num_tokens=num_tokens,
+            device=device,
+            half=half,
+            calibrator=load_calibrator(calibrator),
+        )
+
+    def infer(self, image_path: str | Path) -> tuple[dict[str, Any], list[Any]]:
+        result, masks = self.estimator.infer(image_path)
+        for person in result["persons"]:
+            if person.get("z_depth_calibrated_m") is not None:
+                person["z_depth_m"] = person["z_depth_calibrated_m"]
+            if person.get("distance_calibrated_m") is not None:
+                person["distance_m"] = person["distance_calibrated_m"]
+        return result, masks
 
 
 def make_vlm_batches(

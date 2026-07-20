@@ -1,0 +1,34 @@
+{
+  "preds": "runs\\workzone_v2\\scheme2_eval_preds.csv",
+  "labels": "artifacts\\workzone_v2\\data_splits\\workzone_depth.eval.csv",
+  "raw": {
+    "matched": 332,
+    "total_gt": 339,
+    "match_rate": 0.9793510324483776,
+    "mae_m": 1.8558528734966944,
+    "rmse_m": 3.4535511706554387,
+    "bias_m": 1.719719860901662,
+    "absrel": 0.32089313070631814,
+    "within_0_5m": 0.12048192771084337,
+    "within_1_0m": 0.32831325301204817,
+    "within_0_5m_all_gt": 0.11799410029498525,
+    "within_1_0m_all_gt": 0.3215339233038348,
+    "band_accuracy": 0.6987951807228916
+  },
+  "calibrated": {
+    "matched": 332,
+    "total_gt": 339,
+    "match_rate": 0.9793510324483776,
+    "mae_m": 0.33414854438910185,
+    "rmse_m": 1.0886133756558742,
+    "bias_m": -0.19727498077399225,
+    "absrel": 0.06209336978641237,
+    "within_0_5m": 0.927710843373494,
+    "within_1_0m": 0.9668674698795181,
+    "within_0_5m_all_gt": 0.9085545722713865,
+    "within_1_0m_all_gt": 0.9469026548672567,
+    "band_accuracy": 0.9246987951807228
+  },
+  "calibrator": "artifacts\\workzone_v2\\models\\workzone_moge_calibrator.joblib",
+  "calibrator_type": "mlp"
+}

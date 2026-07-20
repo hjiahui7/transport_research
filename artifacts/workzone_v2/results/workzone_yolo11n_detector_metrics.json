@@ -1,0 +1,11 @@
+{
+  "model": "artifacts\\workzone_v2\\models\\workzone_yolo11n_person_detector_best.pt",
+  "data": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\data\\workzone_v2_yolo_person\\workzone_person.yaml",
+  "imgsz": 960,
+  "batch": 8,
+  "precision": 0.980394550829371,
+  "recall": 0.9639757487948186,
+  "map50": 0.9807108659536998,
+  "map50_95": 0.8890606909402992,
+  "save_dir": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\runs\\yolo\\workzone_v2_best_val"
+}

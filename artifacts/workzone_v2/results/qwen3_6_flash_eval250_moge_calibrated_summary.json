@@ -1,0 +1,46 @@
+{
+  "pred_workers": 422,
+  "gt_workers": 415,
+  "matched": 407,
+  "match_rate": 0.980722891566265,
+  "metrics": {
+    "high_visibility_vest": {
+      "correct": 390,
+      "total": 398,
+      "accuracy": 0.9798994974874372
+    },
+    "helmet_status": {
+      "correct": 375,
+      "total": 398,
+      "accuracy": 0.9422110552763819
+    },
+    "orientation": {
+      "correct": 333,
+      "total": 399,
+      "accuracy": 0.8345864661654135
+    },
+    "occlusion_level": {
+      "correct": 308,
+      "total": 403,
+      "accuracy": 0.7642679900744417
+    },
+    "distance_band": {
+      "correct": 307,
+      "total": 332,
+      "accuracy": 0.9246987951807228
+    },
+    "distance_mae_m": 0.3341485443891019
+  },
+  "model": "qwen3.6-flash",
+  "labels": "artifacts\\workzone_v2\\data_splits\\workzone_depth.eval.csv",
+  "gt_csv": "work-zone-safety-rgbd-dataset\\annotations\\worker_gt_merged.csv",
+  "images": 250,
+  "vlm_batch_size": 25,
+  "vlm_workers": 5,
+  "api_timeout_s": 600.0,
+  "distance_mode": "moge",
+  "detector": "artifacts\\workzone_v2\\models\\workzone_yolo11n_person_detector_best.pt",
+  "calibrator": "artifacts\\workzone_v2\\models\\workzone_moge_calibrator.joblib",
+  "reports_dir": "runs\\workzone_v2\\qwen3_6_flash_eval250_moge_calibrated\\reports",
+  "annotated_dir": "runs\\workzone_v2\\qwen3_6_flash_eval250_moge_calibrated\\annotated"
+}

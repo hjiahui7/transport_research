@@ -1,0 +1,62 @@
+[
+  {
+    "scheme": "qwen3.6-flash_cached_v1",
+    "result_source": "filtered_all500_no_api",
+    "matched": 411,
+    "total_gt": 415,
+    "distance_mae_m": 0.2504712756017087,
+    "distance_band_accuracy": 0.9467455621301775,
+    "vest_accuracy": 0.9776674937965261,
+    "helmet_accuracy": 0.9529702970297029,
+    "orientation_accuracy": 0.8461538461538461,
+    "occlusion_accuracy": 0.7536945812807881
+  },
+  {
+    "scheme": "qwen3-vl-flash_cached_v1",
+    "result_source": "filtered_all500_no_api",
+    "matched": 411,
+    "total_gt": 415,
+    "distance_mae_m": 0.2504712756017087,
+    "distance_band_accuracy": 0.9467455621301775,
+    "vest_accuracy": 0.8660049627791563,
+    "helmet_accuracy": 0.8094059405940595,
+    "orientation_accuracy": 0.6203473945409429,
+    "occlusion_accuracy": 0.7364532019704434
+  },
+  {
+    "scheme": "qwen2.5-vl-3b_cached_v1",
+    "result_source": "filtered_all500_no_api",
+    "matched": 411,
+    "total_gt": 415,
+    "distance_mae_m": 0.2504712756017087,
+    "distance_band_accuracy": 0.9467455621301775,
+    "vest_accuracy": 0.9106699751861043,
+    "helmet_accuracy": 0.7599009900990099,
+    "orientation_accuracy": 0.3424317617866005,
+    "occlusion_accuracy": 0.7266009852216748
+  },
+  {
+    "scheme": "qwen3.6-flash_v2_moge_calibrated",
+    "result_source": "new_api_inference",
+    "matched": 407,
+    "total_gt": 415,
+    "distance_mae_m": 0.3341485443891019,
+    "distance_band_accuracy": 0.9246987951807228,
+    "vest_accuracy": 0.9798994974874372,
+    "helmet_accuracy": 0.9422110552763819,
+    "orientation_accuracy": 0.8345864661654135,
+    "occlusion_accuracy": 0.7642679900744417
+  },
+  {
+    "scheme": "qwen3.6-flash_direct_distance_cached_v1",
+    "result_source": "filtered_all500_no_api",
+    "matched": 411,
+    "total_gt": 415,
+    "distance_mae_m": 2.1489722840236687,
+    "distance_band_accuracy": 0.5710059171597633,
+    "vest_accuracy": 0.9776674937965261,
+    "helmet_accuracy": 0.943069306930693,
+    "orientation_accuracy": 0.8064516129032258,
+    "occlusion_accuracy": 0.7463054187192119
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "dataset_root": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\work-zone-safety-rgbd-dataset",
+  "seed": 7,
+  "total_images": 1685,
+  "total_workers": 3278,
+  "wave1_images": 500,
+  "wave2_images": 1185,
+  "train_images": 1435,
+  "validation_images": 250,
+  "train_workers_all": 2863,
+  "validation_workers_all": 415,
+  "train_depth_rows": 2674,
+  "validation_depth_rows": 339,
+  "validation_recording_images": {
+    "Garage1": 26,
+    "Garage2": 25,
+    "Garage3": 33,
+    "Garage4": 56,
+    "Pave1": 62,
+    "Pave2": 48
+  },
+  "yolo_yaml": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\data\\workzone_v2_yolo_person\\workzone_person.yaml",
+  "train_csv": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\artifacts\\workzone_v2\\data_splits\\workzone_depth.train.csv",
+  "eval_csv": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\artifacts\\workzone_v2\\data_splits\\workzone_depth.eval.csv",
+  "all_csv": "C:\\Users\\jiahu\\OneDrive\\Documents\\human_detect\\artifacts\\workzone_v2\\data_splits\\workzone_depth.all1685.csv"
+}

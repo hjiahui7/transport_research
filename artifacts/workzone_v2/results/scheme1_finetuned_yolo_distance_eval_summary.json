@@ -1,0 +1,21 @@
+{
+  "matched": 332,
+  "total_gt": 339,
+  "match_rate": 0.9793510324483776,
+  "mae_m": 0.37078811144578316,
+  "rmse_m": 1.1450181970205284,
+  "bias_m": -0.15046306927710842,
+  "absrel": 0.06705864744876279,
+  "within_0_5m": 0.8885542168674698,
+  "within_1_0m": 0.963855421686747,
+  "within_0_5m_all_gt": 0.8702064896755162,
+  "within_1_0m_all_gt": 0.943952802359882,
+  "band_accuracy": 0.9307228915662651,
+  "scheme": "yolo_distance_head",
+  "labels": "artifacts\\workzone_v2\\data_splits\\workzone_depth.eval.csv",
+  "checkpoint": "artifacts\\workzone_v2\\models\\workzone_distance_head_ft_yolo.pt",
+  "base_model": "artifacts\\workzone_v2\\models\\workzone_yolo11n_person_detector_best.pt",
+  "detector": "artifacts\\workzone_v2\\models\\workzone_yolo11n_person_detector_best.pt",
+  "iou_threshold": 0.3,
+  "images": 233
+}

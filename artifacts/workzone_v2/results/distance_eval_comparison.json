@@ -1,0 +1,32 @@
+[
+  {
+    "scheme": "finetuned_yolo_distance_head",
+    "matched": 332,
+    "total_gt": 339,
+    "mae_m": 0.37078811144578316,
+    "rmse_m": 1.1450181970205284,
+    "within_0_5m": 0.8885542168674698,
+    "within_1_0m": 0.963855421686747,
+    "band_accuracy": 0.9307228915662651
+  },
+  {
+    "scheme": "moge_raw",
+    "matched": 332,
+    "total_gt": 339,
+    "mae_m": 1.8558528734966944,
+    "rmse_m": 3.4535511706554387,
+    "within_0_5m": 0.12048192771084337,
+    "within_1_0m": 0.32831325301204817,
+    "band_accuracy": 0.6987951807228916
+  },
+  {
+    "scheme": "moge_calibrated_mlp",
+    "matched": 332,
+    "total_gt": 339,
+    "mae_m": 0.33414854438910185,
+    "rmse_m": 1.0886133756558742,
+    "within_0_5m": 0.927710843373494,
+    "within_1_0m": 0.9668674698795181,
+    "band_accuracy": 0.9246987951807228
+  }
+]

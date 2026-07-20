@@ -1,0 +1,58 @@
+{
+  "pred_workers": 420,
+  "gt_workers": 415,
+  "matched": 411,
+  "match_rate": 0.9903614457831326,
+  "metrics": {
+    "high_visibility_vest": {
+      "correct": 394,
+      "total": 403,
+      "accuracy": 0.9776674937965261
+    },
+    "helmet_status": {
+      "correct": 381,
+      "total": 404,
+      "accuracy": 0.943069306930693
+    },
+    "orientation": {
+      "correct": 325,
+      "total": 403,
+      "accuracy": 0.8064516129032258
+    },
+    "occlusion_level": {
+      "correct": 303,
+      "total": 406,
+      "accuracy": 0.7463054187192119
+    },
+    "distance_band": {
+      "correct": 193,
+      "total": 338,
+      "accuracy": 0.5710059171597633
+    },
+    "distance_mae_m": 2.1489722840236687,
+    "distance_valid": 338
+  },
+  "model": "qwen3.6-flash",
+  "vlm_mode": "direct_distance_and_attributes",
+  "labels": "artifacts\\workzone_v2\\data_splits\\workzone_depth.eval.csv",
+  "gt_csv": "work-zone-safety-rgbd-dataset\\annotations\\worker_gt_merged.csv",
+  "images": 250,
+  "vlm_batch_size": 50,
+  "vlm_workers": 2,
+  "api_timeout_s": 240.0,
+  "vlm_failed_batches": 0,
+  "reports_dir": "artifacts\\workzone_v2\\results\\qwen3_6_flash_vlm_direct_distance_eval250_cached_reports",
+  "annotated_dir": "runs\\workzone\\qwen3_6_flash_vlm_direct_distance_all500_b50_rerun\\annotated",
+  "per_worker_csv": "artifacts\\workzone_v2\\results\\qwen3_6_flash_vlm_direct_distance_eval250_cached_per_worker.csv",
+  "merged_from": {
+    "base_dir": "runs\\workzone\\qwen3_6_flash_vlm_direct_distance_all500_b50_rerun",
+    "retry_dir": "runs\\workzone\\qwen3_6_flash_vlm_direct_distance_b50_retry_failed_b25_t600",
+    "retry_images": 200
+  },
+  "retry_api_timeout_s": 600.0,
+  "retry_vlm_batch_size": 25,
+  "note": "b50 direct-distance run merged with b25 timeout-600 retry for failed batches",
+  "recomputed_from": "artifacts\\workzone_v1\\results\\qwen3_6_flash_vlm_direct_distance_all500_summary.json",
+  "api_calls": 0,
+  "missing_reports": []
+}
