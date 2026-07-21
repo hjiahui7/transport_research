@@ -81,9 +81,9 @@ Calibrator 只使用 train 的 2672 条成功匹配记录训练，在 train 内�
 
 | 方案 | worker 匹配 | 距离 MAE | 距离档位 | Vest | Helmet | Orientation | Occlusion |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| 历史 qwen3.6-flash（离线筛选） | 411 / 415 | 0.334m | 92.5% | 97.8% | 95.3% | 84.6% | 75.4% |
-| 历史 qwen3-vl-flash（离线筛选） | 411 / 415 | 0.334m | 92.5% | 86.6% | 80.9% | 62.0% | 73.6% |
-| 历史 Qwen2.5-VL-3B（离线筛选） | 411 / 415 | 0.334m | 92.5% | 91.1% | 76.0% | 34.2% | 72.7% |
+| 历史 qwen3.6-flash（离线筛选） | 407 / 415 | 0.334m | 92.5% | 97.8% | 95.3% | 84.6% | 75.4% |
+| 历史 qwen3-vl-flash（离线筛选） | 407 / 415 | 0.334m | 92.5% | 86.6% | 80.9% | 62.0% | 73.6% |
+| 历史 Qwen2.5-VL-3B（离线筛选） | 407 / 415 | 0.334m | 92.5% | 91.1% | 76.0% | 34.2% | 72.7% |
 | **v2 qwen3.6-flash + MoGe calibration** | **407 / 415** | **0.334m** | **92.5%** | **98.0%** | **94.2%** | **83.5%** | **76.4%** |
 
 VLM 只判断 `high_visibility_vest`、`helmet_status`、`orientation` 和 `occlusion_level`。`distance_to_equipment_m` 来自本地 YOLO + MoGe + calibration，`distance_band` 由代码按米数计算，不让 VLM 猜距离。
