@@ -1,0 +1,241 @@
+{
+  "zone_confusion": {
+    "common_workers": 332,
+    "depth_matrix": [
+      [
+        73,
+        4,
+        0
+      ],
+      [
+        12,
+        130,
+        3
+      ],
+      [
+        0,
+        6,
+        104
+      ]
+    ],
+    "vlm_direct_matrix": [
+      [
+        22,
+        49,
+        6
+      ],
+      [
+        13,
+        111,
+        21
+      ],
+      [
+        0,
+        55,
+        55
+      ]
+    ]
+  },
+  "distance_analysis": {
+    "scatter": {
+      "Raw MoGe": {
+        "n": 332,
+        "mae_m": 1.8558528734966944,
+        "bias_m": 1.719719860901662
+      },
+      "MoGe + MLP calibration": {
+        "n": 332,
+        "mae_m": 0.3341485443891019,
+        "bias_m": -0.1972749807739923
+      }
+    },
+    "cdf_common_workers": 330,
+    "methods": {
+      "head": {
+        "mae_m": 0.3717542545454546,
+        "within_0_5m": 0.8878787878787879,
+        "within_1_0m": 0.9636363636363636
+      },
+      "raw": {
+        "mae_m": 1.854486277814318,
+        "within_0_5m": 0.12121212121212122,
+        "within_1_0m": 0.3303030303030303
+      },
+      "calibrated": {
+        "mae_m": 0.3346586946632164,
+        "within_0_5m": 0.9272727272727272,
+        "within_1_0m": 0.9666666666666667
+      },
+      "vlm_direct": {
+        "mae_m": 2.0535188666666664,
+        "within_0_5m": 0.24848484848484848,
+        "within_1_0m": 0.42424242424242425
+      }
+    }
+  },
+  "qualitative": {
+    "cases": [
+      {
+        "image_id": "Garage4_000144.png",
+        "workers": [
+          {
+            "worker_index": 1,
+            "result_worker_index": 1,
+            "distance_m": 2.0242307152322536,
+            "zone": "Close",
+            "gt_distance_m": 2.048828,
+            "raw_moge_m": 3.1742803740411403
+          },
+          {
+            "worker_index": 2,
+            "result_worker_index": 2,
+            "distance_m": 2.2938005322036688,
+            "zone": "Close",
+            "gt_distance_m": 2.365234,
+            "raw_moge_m": 2.553245637517577
+          }
+        ]
+      },
+      {
+        "image_id": "Pave1_001686.png",
+        "workers": [
+          {
+            "worker_index": 1,
+            "result_worker_index": 2,
+            "distance_m": 3.329487773890087,
+            "zone": "Careful",
+            "gt_distance_m": 3.367188,
+            "raw_moge_m": 4.539197506866204
+          },
+          {
+            "worker_index": 2,
+            "result_worker_index": 1,
+            "distance_m": 6.449706058719465,
+            "zone": "Safe",
+            "gt_distance_m": 3.495117,
+            "raw_moge_m": 4.062618906496623
+          }
+        ]
+      },
+      {
+        "image_id": "Garage1_002064.png",
+        "workers": [
+          {
+            "worker_index": 1,
+            "result_worker_index": 1,
+            "distance_m": 12.092304331964947,
+            "zone": "Safe",
+            "gt_distance_m": 11.480469,
+            "raw_moge_m": 20.085619555499328
+          }
+        ]
+      },
+      {
+        "image_id": "Garage4_001530.png",
+        "workers": [
+          {
+            "worker_index": 1,
+            "result_worker_index": 1,
+            "distance_m": 3.9260006241039274,
+            "zone": "Careful",
+            "gt_distance_m": 4.011719,
+            "raw_moge_m": 5.498709316330124
+          },
+          {
+            "worker_index": 2,
+            "result_worker_index": 3,
+            "distance_m": 2.3899002917944503,
+            "zone": "Close",
+            "gt_distance_m": 2.619141,
+            "raw_moge_m": 3.7331370795792513
+          },
+          {
+            "worker_index": 3,
+            "result_worker_index": 2,
+            "distance_m": 4.973779869304167,
+            "zone": "Careful",
+            "gt_distance_m": 5.117188,
+            "raw_moge_m": 6.469782571552905
+          }
+        ]
+      }
+    ]
+  },
+  "vlm_attributes": {
+    "common_workers": 405,
+    "models": {
+      "Qwen3.6-Flash (cached)": {
+        "Vest": {
+          "accuracy": 0.9874371859296482,
+          "n": 398
+        },
+        "Helmet": {
+          "accuracy": 0.964824120603015,
+          "n": 398
+        },
+        "Orientation": {
+          "accuracy": 0.8521303258145363,
+          "n": 399
+        },
+        "Occlusion": {
+          "accuracy": 0.7630922693266833,
+          "n": 401
+        }
+      },
+      "Qwen3-VL-Flash": {
+        "Vest": {
+          "accuracy": 0.8743718592964824,
+          "n": 398
+        },
+        "Helmet": {
+          "accuracy": 0.8165829145728644,
+          "n": 398
+        },
+        "Orientation": {
+          "accuracy": 0.6215538847117794,
+          "n": 399
+        },
+        "Occlusion": {
+          "accuracy": 0.7456359102244389,
+          "n": 401
+        }
+      },
+      "Qwen2.5-VL-3B": {
+        "Vest": {
+          "accuracy": 0.9221105527638191,
+          "n": 398
+        },
+        "Helmet": {
+          "accuracy": 0.7713567839195979,
+          "n": 398
+        },
+        "Orientation": {
+          "accuracy": 0.3458646616541353,
+          "n": 399
+        },
+        "Occlusion": {
+          "accuracy": 0.7356608478802993,
+          "n": 401
+        }
+      },
+      "Qwen3.6-Flash (v2)": {
+        "Vest": {
+          "accuracy": 0.9798994974874372,
+          "n": 398
+        },
+        "Helmet": {
+          "accuracy": 0.9422110552763819,
+          "n": 398
+        },
+        "Orientation": {
+          "accuracy": 0.8345864661654135,
+          "n": 399
+        },
+        "Occlusion": {
+          "accuracy": 0.7630922693266833,
+          "n": 401
+        }
+      }
+    }
+  }
+}
