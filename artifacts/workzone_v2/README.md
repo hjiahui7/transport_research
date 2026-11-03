@@ -1,5 +1,7 @@
 # Work-zone v2 实验产物
 
+> 本页记录历史实验。当前 Work-Zone 测距结果和模型见 [Work-Zone Distance](../workzone_depth/README.md)。
+
 本目录对应 `500 + 1185 = 1685` 张 RGB 工地图像的新实验。人体检测和距离 calibration 已重新训练；最终 250 图完整链路使用 `qwen3.6-flash` 重新判断安全属性。
 
 ## 目录结构

@@ -25,9 +25,12 @@ class DistanceEstimator:
         num_tokens: int | None = 1200,
         device: str = "cuda:0",
         half: bool = True,
+        detector_half: bool | None = None,
         calibrator: CalibratorBundle | None = None,
     ) -> None:
-        self.segmenter = YoloPersonSegmenter(detector, device=device, imgsz=imgsz, half=half, conf=conf)
+        self.segmenter = YoloPersonSegmenter(
+            detector, device=device, imgsz=imgsz, half=half if detector_half is None else detector_half, conf=conf,
+        )
         self.geometry = MogeGeometry(geometry_model, device=device, half=half, geom_size=geom_size, num_tokens=num_tokens)
         self.calibrator = calibrator
 

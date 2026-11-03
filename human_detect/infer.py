@@ -25,6 +25,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--num-tokens", type=int, default=1200, help="MoGe token budget when supported.")
     parser.add_argument("--device", default="cuda:0", help="Torch device.")
     parser.add_argument("--half", action=argparse.BooleanOptionalAction, default=True, help="Use FP16 where supported.")
+    parser.add_argument("--detector-half", action=argparse.BooleanOptionalAction, default=None,
+                        help="Override YOLO precision independently of --half for MoGe.")
     parser.add_argument("--calibrator", default=None, help="Optional joblib calibrator from human_detect.fit_calibrator.")
     return parser
 
@@ -41,6 +43,7 @@ def main(argv: list[str] | None = None) -> int:
         num_tokens=args.num_tokens,
         device=args.device,
         half=args.half,
+        detector_half=args.detector_half,
         calib_path=args.calib,
         calibrator_path=args.calibrator,
     )
@@ -65,6 +68,7 @@ def infer_image(
     num_tokens: int | None = 1200,
     device: str = "cuda:0",
     half: bool = True,
+    detector_half: bool | None = None,
     calib_path: str | Path | None = None,
     calibrator_path: str | Path | None = None,
 ) -> tuple[dict[str, Any], list]:
@@ -78,6 +82,7 @@ def infer_image(
         num_tokens=num_tokens,
         device=device,
         half=half,
+        detector_half=detector_half,
         calibrator=calibrator,
     )
     return estimator.infer(Path(image_path), calib_path=calib_path)

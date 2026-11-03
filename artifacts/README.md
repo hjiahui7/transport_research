@@ -7,7 +7,8 @@
 | 目录 | 内容 |
 |---|---|
 | `rawalk_v1/` | Rawalk/EgoHumans 旧实验模型，文件名已重新整理 |
-| `workzone_v1/` | work-zone 新实验模型、结果、20 图 JSON pipeline 输出和 Qwen prompt |
+| [`workzone_depth/`](workzone_depth/README.md) | 当前 Work-Zone 距离模型与验证结果 |
+| `workzone_v1/`、`workzone_v2/` | 历史 Work-Zone 实验记录 |
 | `data/` | Rawalk/EgoHumans 旧实验处理后的 CSV/JSON/YAML 结果 |
 
 Rawalk/EgoHumans 旧实验模型已整理到：
@@ -16,10 +17,10 @@ Rawalk/EgoHumans 旧实验模型已整理到：
 artifacts/rawalk_v1/models/
 ```
 
-work-zone 新实验模型已整理到：
+当前 Work-Zone 距离模型在：
 
 ```text
-artifacts/workzone_v1/models/
+artifacts/workzone_depth/models/
 ```
 
 ## data
@@ -38,4 +39,4 @@ artifacts/workzone_v1/models/
 | `data/rawalk_yolo11s_960_e20.metrics.json` | fine-tuned YOLO 检测指标 |
 | `data/rawalk_yolo11s_960_e20_args.yaml` | fine-tuned YOLO 训练参数 |
 
-注意：CSV 里的 `image_path` 仍然指向本机 Rawalk 原始图片路径。如果别人只下载 GitHub 仓库，可以查看数据处理结果和指标，也可以用 `artifacts/rawalk_v1/models/` 或 `artifacts/workzone_v1/models/` 跑新图片推理；要重新跑 Rawalk 原图评估，需要按 README 放置 Rawalk 原始数据。
+注意：CSV 里的 `image_path` 仍然指向本机 Rawalk 原始图片路径。如果别人只下载 GitHub 仓库，可以查看数据处理结果和指标，也可以用 `artifacts/rawalk_v1/models/` 或 `artifacts/workzone_depth/models/` 跑新图片推理；要重新跑 Rawalk 原图评估，需要按 README 放置 Rawalk 原始数据。

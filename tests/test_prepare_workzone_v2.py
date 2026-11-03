@@ -36,3 +36,18 @@ def test_numeric_depth_controls_distance_class() -> None:
     assert normalized_distance_class(6.0, "<3") == "3-6"
     assert normalized_distance_class(6.1, "<3") == ">6"
     assert normalized_distance_class(None, "3-5") == "3-6"
+
+
+def test_workzone_distance_label_does_not_fall_back_to_axial_depth() -> None:
+    from human_detect.workzone import workzone_distance_value
+
+    assert workzone_distance_value({"lidar_distance_gt_m": "3.1", "depth_z_m": "2.9"}) == "3.1"
+    assert workzone_distance_value({"lidar_distance_gt_m": "", "depth_z_m": "2.9"}) == ""
+    assert workzone_distance_value({"lidar_radial_gt_m": "3.1"}, require_lidar_distance=True) == "3.1"
+    assert workzone_distance_value({"depth_z_m": "2.9"}) == "2.9"
+    try:
+        workzone_distance_value({"depth_z_m": "2.9"}, require_lidar_distance=True)
+    except ValueError as exc:
+        assert "lidar_distance_gt_m" in str(exc)
+    else:
+        raise AssertionError("Accepted an axial-depth-only training annotation")

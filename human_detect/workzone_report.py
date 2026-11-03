@@ -16,6 +16,7 @@ from openai import OpenAI
 
 from .infer_distance_head import DistanceHeadEstimator
 from .matching import bbox_iou
+from .workzone import workzone_distance_value
 
 
 DEFAULT_BASE_URL = "https://ws-2vah2d019k5467zo.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
@@ -388,7 +389,7 @@ def load_gt_for_image(gt_csv: str | Path, image_id: str) -> list[WorkzoneGtWorke
         for row in csv.DictReader(handle):
             if row["image_id"] != image_id:
                 continue
-            depth_raw = row.get("depth_z_m")
+            depth_raw = workzone_distance_value(row)
             try:
                 distance_m = None if depth_raw in {"", None} else float(depth_raw)
             except ValueError:
