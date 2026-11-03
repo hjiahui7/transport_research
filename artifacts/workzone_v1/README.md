@@ -1,5 +1,7 @@
 # workzone_v1
 
+> 本页记录历史实验。当前 Work-Zone 测距结果和模型见 [Work-Zone Distance](../workzone_depth/README.md)。
+
 这是 work-zone-safety-rgbd-dataset 实验的轻量发布包，只包含可提交到 GitHub 的模型、CSV/JSON 结果和数据 split，不包含原始图片或训练过程目录。
 
 ## 文件结构

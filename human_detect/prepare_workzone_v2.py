@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import os
 import random
 import shutil
@@ -10,7 +11,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
-from .workzone import yolo_label_line
+from .workzone import REPO_ROOT, WORKZONE_DATASET, workzone_distance_value, yolo_label_line
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,8 @@ class V2Worker:
     distance_class_3: str
     depth_source: str
     data_source: str
+
+    representative_z_m: float | None = None
 
     @property
     def depth_usable(self) -> bool:
@@ -57,11 +60,11 @@ CSV_COLUMNS = [
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Prepare the combined 500 + Wave 2 work-zone v2 dataset.")
-    parser.add_argument("--dataset-root", default="work-zone-safety-rgbd-dataset")
+    parser.add_argument("--dataset-root", default=WORKZONE_DATASET)
     parser.add_argument("--validation-images", type=int, default=250)
     parser.add_argument("--seed", type=int, default=7)
-    parser.add_argument("--yolo-out", default=r"data\workzone_v2_yolo_person")
-    parser.add_argument("--artifact-out", default=r"artifacts\workzone_v2")
+    parser.add_argument("--yolo-out", default=REPO_ROOT / "runs" / "workzone_depth" / "yolo")
+    parser.add_argument("--artifact-out", default=REPO_ROOT / "runs" / "workzone_depth" / "prepared")
     parser.add_argument("--link-mode", choices=["hardlink", "copy"], default="hardlink")
     return parser
 
@@ -197,11 +200,14 @@ def worker_from_csv(
     depth_source: str,
     data_source: str,
 ) -> V2Worker:
-    depth_raw = row.get("depth_z_m", "")
-    try:
-        depth_m = float(depth_raw) if depth_raw else None
-    except ValueError:
-        depth_m = None
+    depth_raw = workzone_distance_value(row, require_lidar_distance=True)
+    depth_m = float(depth_raw) if depth_raw else None
+    representative_z = float(row["representative_lidar_z_m"]) if row.get("representative_lidar_z_m") else None
+    if depth_m is not None and (
+        not math.isfinite(depth_m) or depth_m <= 0
+        or representative_z is None or not math.isfinite(representative_z) or representative_z <= 0
+    ):
+        raise ValueError(f"Invalid LiDAR distance or representative Z for {row['worker_key']}")
     return V2Worker(
         worker_key=row["worker_key"],
         image_id=row["image_id"],
@@ -212,6 +218,7 @@ def worker_from_csv(
         worker_index=row.get("worker_index", ""),
         bbox_xyxy=(float(row["bbox_x1"]), float(row["bbox_y1"]), float(row["bbox_x2"]), float(row["bbox_y2"])),
         depth_m=depth_m,
+        representative_z_m=representative_z,
         distance_class_3=normalized_distance_class(depth_m, row.get("distance_class_3", "")),
         depth_source=depth_source,
         data_source=data_source,
@@ -270,7 +277,8 @@ def write_distance_csv(path: Path, rows: list[V2Worker]) -> None:
         writer.writeheader()
         for row in rows:
             x1, y1, x2, y2 = row.bbox_xyxy
-            depth = "" if row.depth_m is None else f"{row.depth_m:.6f}"
+            distance = "" if row.depth_m is None else f"{row.depth_m:.9f}"
+            depth = "" if row.representative_z_m is None else f"{row.representative_z_m:.9f}"
             writer.writerow(
                 {
                     "image_path": str(row.image_path),
@@ -284,7 +292,7 @@ def write_distance_csv(path: Path, rows: list[V2Worker]) -> None:
                     "bbox_x2": f"{x2:.6f}",
                     "bbox_y2": f"{y2:.6f}",
                     "depth_m": depth,
-                    "distance_m": depth,
+                    "distance_m": distance,
                     "distance_class_3": row.distance_class_3,
                     "depth_source": row.depth_source,
                     "scene_type": row.scene_type,

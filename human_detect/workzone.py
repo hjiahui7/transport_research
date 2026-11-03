@@ -11,8 +11,21 @@ from pathlib import Path
 from typing import Iterable
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+WORKZONE_DATASET = REPO_ROOT.parent / "work-zone-safety-rgbd-dataset"
+
+
 IMAGE_WIDTH = 960
 IMAGE_HEIGHT = 720
+
+
+def workzone_distance_value(row: dict[str, str], *, require_lidar_distance: bool = False) -> str | None:
+    for field in ("lidar_distance_gt_m", "lidar_radial_gt_m"):
+        if field in row:
+            return row[field]
+    if require_lidar_distance:
+        raise ValueError("Work-Zone distance training requires lidar_distance_gt_m in the annotations.")
+    return row.get("depth_z_m")
 
 
 @dataclass(frozen=True)
@@ -28,6 +41,8 @@ class WorkzoneRow:
     distance_class_3: str
     depth_source: str
 
+    representative_z_m: float | None = None
+
     @property
     def depth_usable(self) -> bool:
         return self.depth_m is not None and self.depth_m > 0.0
@@ -39,7 +54,7 @@ def read_workzone_rows(dataset_root: str | Path) -> list[WorkzoneRow]:
     rows: list[WorkzoneRow] = []
     with csv_path.open("r", newline="", encoding="utf-8-sig") as handle:
         for row in csv.DictReader(handle):
-            depth_raw = row.get("depth_z_m")
+            depth_raw = workzone_distance_value(row)
             try:
                 depth_m = None if depth_raw in {"", None} else float(depth_raw)
             except ValueError:
@@ -59,6 +74,7 @@ def read_workzone_rows(dataset_root: str | Path) -> list[WorkzoneRow]:
                         float(row["bbox_y2"]),
                     ),
                     depth_m=depth_m,
+                    representative_z_m=float(row["representative_lidar_z_m"]) if row.get("representative_lidar_z_m") else None,
                     distance_class_3=row.get("distance_class_3", ""),
                     depth_source=row.get("depth_source", ""),
                 )
@@ -214,7 +230,9 @@ def write_distance_csv(rows: list[WorkzoneRow], *, root: Path, out_path: Path) -
         writer.writeheader()
         for row in rows:
             x1, y1, x2, y2 = row.bbox_xyxy
-            depth_value = "" if row.depth_m is None else f"{row.depth_m:.6f}"
+            distance_value = "" if row.depth_m is None else f"{row.depth_m:.9f}"
+            z_value = row.representative_z_m if row.representative_z_m is not None else row.depth_m
+            depth_value = "" if z_value is None else f"{z_value:.9f}"
             writer.writerow(
                 {
                     "image_path": str((root / "images" / f"{row.image_id}.png").resolve()),
@@ -228,7 +246,7 @@ def write_distance_csv(rows: list[WorkzoneRow], *, root: Path, out_path: Path) -
                     "bbox_x2": f"{x2:.6f}",
                     "bbox_y2": f"{y2:.6f}",
                     "depth_m": depth_value,
-                    "distance_m": depth_value,
+                    "distance_m": distance_value,
                     "distance_class_3": distance_class_3_from_row(row),
                     "depth_source": row.depth_source,
                     "scene_type": row.scene_type,

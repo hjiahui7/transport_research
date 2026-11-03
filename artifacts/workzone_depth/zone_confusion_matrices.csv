@@ -1,0 +1,10 @@
+method,gt_zone,<3,3-6,>6,no_detection,no_distance
+yolo_distance_head,<3,55,12,1,1,0
+yolo_distance_head,3-6,4,152,3,0,0
+yolo_distance_head,>6,1,9,174,3,0
+moge_raw,<3,47,21,0,1,0
+moge_raw,3-6,3,89,67,0,0
+moge_raw,>6,0,0,184,3,0
+moge_calibrated,<3,64,3,1,1,0
+moge_calibrated,3-6,10,134,15,0,0
+moge_calibrated,>6,0,6,178,3,0
